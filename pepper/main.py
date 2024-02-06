@@ -7,6 +7,23 @@ from robot import Pepper
 import threading
 import sys
 import time
+from flask import Flask, render_template, redirect, url_for, request
+
+app = Flask(__name__)
+web_host = "192.168.0.107"
+web_page = "http://192.168.0.107/"
+@app.route('/', methods=['GET', 'POST'])
+def main():
+    print("one")
+    if request.method == 'POST':
+        print("aa")
+        return redirect(url_for('test'))
+    return render_template('main.html')
+
+@app.route('/test')
+def test():
+    return "test page"
+
 
 class KUpepper:
     def __init__(self, ip, port):
@@ -19,6 +36,7 @@ class KUpepper:
         self.event2 = threading.Event()
         self.base_thread = threading.Thread(target=self.baseline)
         self.base_thread.daemon = True
+        self.robot.show_web(web_page)
         self.base_thread.start()        
         self.base_interface_robot()
 
@@ -38,7 +56,7 @@ class KUpepper:
                             break
                 else:
                     pass
-
+                
                 if count == 0:
                     self.localize = threading.Thread(target= self.localization())
                     self.localize.start()                
@@ -77,7 +95,7 @@ class KUpepper:
     def localization(self):
         self.event2.set()
         self.robot.stop_localization()
-        self.robot.load_map(file_name="map.png",file_path="./tmp_files/version_0/")
+        self.robot.load_map(file_name="2024-02-06T040923.038Z.explo")
         self.robot.robot_localization()
         #print(self.robot.navigation_service.getMetricalMap())
 
@@ -147,11 +165,14 @@ class KUpepper:
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
-    pepper.localization()
 
 
 if __name__ == "__main__":
-    main()
+    base_thread = threading.Thread(target=main)
+    base_thread.start()
+    app.run(host=web_host, port=80, debug=True)
+
+    # main()
     
 
     

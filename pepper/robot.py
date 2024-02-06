@@ -756,7 +756,7 @@ class Pepper:
             self.navigation_service.startLocalization()
 
             self.navigation_service.navigateToInMap([x, y, 0])
-            pos =self.robot.navigation_service.getRobotPositionInMap()
+            pos =self.navigation_service.getRobotPositionInMap()
             print("robot_pos: " ,pos)
             self.navigation_service.stopLocalization()
             print("[INFO]: Successfully got into location")

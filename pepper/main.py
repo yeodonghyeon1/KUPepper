@@ -40,25 +40,29 @@ class KUpepper:
         self.base_thread = threading.Thread(target=self.baseline)
         self.base_thread.daemon = True
         self.robot.show_web(web_page)
+        self.robot.tablet_service.turnScreenOn(True)
         self.base_thread.start()        
         self.base_interface_robot()
         self.base_thread.join() 
         #connect
 
-    def baseline(self):
-        
-        count = 0
-        self.robot.set_security_distance(distance=0.5)
-        try:
+    def stopThreadUntilOneTheEnd(self):
+        if self.event.is_set():
             while True:
                 if self.event.is_set():
-                    while True:
-                        if self.event.is_set():
-                            time.sleep(0.1)
-                        else:
-                            break
+                    time.sleep(0.1)
                 else:
-                    pass
+                    break
+        else:
+            pass
+
+    def baseline(self):
+        count = 0
+        self.robot.set_security_distance(distance=0.5)
+        # print(robot)
+        try:
+            while True:
+                self.stopThreadUntilOneTheEnd()
                 
                 if count == 0:
                     self.localize = threading.Thread(target= self.localization())

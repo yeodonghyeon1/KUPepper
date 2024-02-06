@@ -550,6 +550,48 @@ class Pepper:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
+
+    def get_map(self, on_robot=False, remote_ip="lcoalhost"):
+        """
+        Shows a map from robot based on previously loaded one
+        or explicit exploration of the scene. It can be viewed on
+        the robot or in the computer by OpenCV.
+
+        :param on_robot: If set shows a map on the robot
+        :type on_robot: bool
+        :param remote_ip: IP address of remote (default None)
+        :type remote_ip: string
+
+        .. warning:: Showing map on the robot is not fully supported at the moment.
+        """
+        result_map = self.navigation_service.getMetricalMap()
+        map_width = result_map[1]
+        map_height = result_map[2]
+        img = numpy.array(result_map[4]).reshape(map_width, map_height)
+        img = (100 - img) * 2.55  # from 0..100 to 255..0
+        img = numpy.array(img, numpy.uint8)
+
+        resolution = result_map[0]
+
+        self.robot_localization()
+
+        offset_x = result_map[3][0]
+        offset_y = result_map[3][1]
+        x = self.localization[0]
+        y = self.localization[1]
+
+        goal_x = (x - offset_x) / resolution
+        goal_y = -1 * (y - offset_y) / resolution
+
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
+
+        robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
+
+        return robot_map
+
+
+
     def robot_localization(self):
         """
         Localize a robot in a map

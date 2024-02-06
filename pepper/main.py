@@ -16,7 +16,7 @@ app = Flask(__name__)
 web_host = "192.168.0.107"
 web_page = "http://192.168.0.107/"
 @app.route('/', methods=['GET', 'POST'])
-def main():
+def main_page():
     print("one")
     if request.method == 'POST':
         print("aa")
@@ -42,9 +42,9 @@ class KUpepper:
         self.robot.show_web(web_page)
         self.base_thread.start()        
         self.base_interface_robot()
-
         self.base_thread.join() 
         #connect
+
     def baseline(self):
         
         count = 0
@@ -168,12 +168,14 @@ class KUpepper:
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
-
-
+    
+count_temp = 0
 if __name__ == "__main__":
     base_thread = threading.Thread(target=main)
+    base_thread.daemon = True
     base_thread.start()
-    app.run(host=web_host, port=80, debug=True)
+    print(count_temp)
+    app.run(host=web_host, port=80, debug=False)
 
     # main()
     

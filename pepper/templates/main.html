@@ -1,64 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-    <meta charset="UTF-8">
-    <title>
-        Flask #2
-    </title>
-    <style>
-         #full {
-        /* margin: 0;
-        padding: 0;    */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>좌우 1:2 비율 레이아웃</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+
+    .container {
         display: flex;
-        background-color: grey;
+        height: 100%;
     }
-    #screen_left {
+
+    .left-panel {
         flex: 1;
-        background-color: black;
-        float: left;
+        display: flex;
+        flex-direction: column;
     }
-    #screenleft-1 {
+
+    .top-panel, .bottom-panel {
         flex: 1;
         background-color: red;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
     }
-    #screenleft-2 {
-        flex: 1;
-        background-color: yellow;
-    }
-    #screenright {
+
+    .right-panel {
         flex: 2;
         background-color: blue;
-        float: left;
     }
-        	.my_btn {
-            background-color: skyblue;
-            color: white;
-            border: none;
-            font-size: 30px;
-            padding: 130px 160px;
-            }
-    </style>
+
+    .my_btn {
+        background-color: skyblue;
+        color: white;
+        border: none;
+        font-size: 3vw;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
 </head>
 <body>
-    <div id="full">
-        <div id="screen_left">
-            <div id="screenleft-1">
-                <form action=" " method="POST">
-                    <button type="submit", value="Button", class='my_btn'>페이지 넘기기1</button>
-                </form>
-            </div>
-            <div id="screenleft-2">
-                <form action=" " method="POST">
-                    <button type="submit", value="Button", class='my_btn'>페이지 넘기기2</button>
-                </form>
-            </div>
+
+<div class="container">
+    <div class="left-panel">
+        <div class="top-panel">
+            <form action=" " method="POST">
+                <button type="submit" value="Button" class="my_btn">페이지 넘기기2</button>
+            </form>
         </div>
-        <div id="screenright"></div>
+        <div class="bottom-panel">
+            <form action=" " method="POST">
+                <button type="submit" value="Button" class="my_btn">페이지 넘기기2</button>
+            </form>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous">
+    <div class="right-panel">
+        
+    </div>
+</div>
+
+<script>
+    // 왼쪽 패널의 크기를 측정하여 버튼의 크기를 조정하는 함수
+    function adjustButtonSize() {
+        var panels = document.querySelectorAll('.top-panel, .bottom-panel');
+        var buttons = document.querySelectorAll('.my_btn');
+
+        panels.forEach(function(panel, index) {
+            var button = buttons[index];
+            var panelWidth = panel.offsetWidth;
+            var panelHeight = panel.offsetHeight;
+
+            button.style.width = panelWidth + 'px';
+            button.style.height = panelHeight + 'px';
+        });
+    }
+
+    // 페이지 로드시 및 창 크기 변경시 버튼 크기 조정
+    window.addEventListener('load', adjustButtonSize);
+    window.addEventListener('resize', adjustButtonSize);
 </script>
+
 </body>
 </html>

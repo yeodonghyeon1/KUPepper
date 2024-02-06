@@ -10,6 +10,8 @@ import time
 from flask import Flask, render_template, redirect, url_for, request
 
 #main.htmpsdf
+#main.htmp -> testaa
+#main.htmpSASDASD
 app = Flask(__name__)
 web_host = "192.168.0.107"
 web_page = "http://192.168.0.107/"

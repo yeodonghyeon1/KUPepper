@@ -60,6 +60,7 @@ class KUpepper:
         count = 0
         self.robot.set_security_distance(distance=0.5)
         # print(robot)
+        #qd
         try:
             while True:
                 self.stopThreadUntilOneTheEnd()

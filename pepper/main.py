@@ -46,6 +46,7 @@ class KUpepper:
         self.base_thread.join() 
         #connect
 
+    #돌아가는 이벤트가 없을때까지 기다림
     def stopThreadUntilOneTheEnd(self):
         if self.event.is_set():
             while True:
@@ -53,9 +54,8 @@ class KUpepper:
                     time.sleep(0.1)
                 else:
                     break
-        else:
-            pass
 
+    #
     def baseline(self):
         count = 0
         self.robot.set_security_distance(distance=0.5)

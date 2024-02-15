@@ -214,7 +214,6 @@ class Pepper:
     def show_web(self, website):
         print("Showing a website on the tablet")
         self.tablet_service.showWebview(website)
-        time.sleep(1000)
     def detect_touch(self):
         react_to_touch = ReactToTouch(self.app)
         print("Waiting for touch...")

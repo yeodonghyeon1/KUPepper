@@ -89,9 +89,9 @@ class KUpepper:
                 #     self.localize = threading.Thread(target= self.localization())
                 #     self.localize.start()                
 
-                # if count == 3:
-                #     self.navigation_mode_button_push2()
-
+                if app.test2 == True:
+                    self.navigation_mode_button_push2()
+                    app.test2 = False
 
                 # if count == 3:
                 #     move_pepper = threading.Thread(target=self.move(3,0))
@@ -135,6 +135,7 @@ class KUpepper:
         self.exploration_pepper_button()
         self.navigation_pepper_button()
         self.navigation_pepper_button2()
+        self.webpage_reset_button()
         #마지막에 있어야함
         self.window.mainloop()
         
@@ -157,6 +158,13 @@ class KUpepper:
         self.localize.start()                
         move_pepper = threading.Thread(target=self.move(0,0))
         move_pepper.start()  
+        self.event.clear()
+
+    def web_page_reset(self):
+        self.event.set()
+        self.web_thread = threading.Thread(target=self.robot.show_web(web_page))
+        self.web_thread.start()     
+        self.robot.say("web page reset")
         self.event.clear()
 
     def move(self,x,y):
@@ -208,6 +216,11 @@ class KUpepper:
         button = Tkinter.Button(self.window, text="맵핑 모드", command=self.exploration_mode_button_push)
         button.pack()
         self.window.bind("<")
+
+    def webpage_reset_button(self):
+        button = Tkinter.Button(self.window, text="웹페이지 리셋", command=self.web_page_reset)
+        button.pack()
+        self.window.bind("<")
         # label = Tkinter.Label(self.window, text="안녕하세요!")
         # # 레이블 위치 설정
         # label.place(x=150, y=150)
@@ -217,7 +230,6 @@ class KUpepper:
         # button.place(x=180, y=200)
 
 def main():
-
     pepper = KUpepper("192.168.0.125", "9559")
     
 count_temp = 0

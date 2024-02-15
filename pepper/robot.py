@@ -27,7 +27,15 @@ from PIL import Image
 from callbacks import HumanGreeter, ReactToTouch
 import os
 import pickle
+import openai
 
+openai.api_key = "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"
+
+response = openai.ChatCompletion.create(
+  model="gpt-3.5-turbo",
+  messages=[
+        {"role": "system", "content": "You are a helpful assistant."}]
+)
 tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp_files")
 if not os.path.exists(tmp_path):
     os.makedirs(tmp_path)
@@ -72,9 +80,9 @@ class Pepper:
         #수정
         self.user_session = self.session.service("ALUserSession")
         self.sonar_service = self.session.service("ALLocalization")
-        
+        self.sound_detect_service = self.session.service("ALSoundDetection")
+ 
         self.detect_service = self.session.service("ALVisualCompass")
-
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")
         self.tracker_service = self.session.service("ALTracker")
@@ -1147,14 +1155,23 @@ class Pepper:
 
         ..warning:: This is not currently working
         """
-        
-        tools.chatbot_init()
+    
         while True:
             try:
                 self.set_awareness(False)
-                question = self.listen()
+                # question = self.listen()
+                question = "sdasdf"
                 print("[USER]: " + question)
-                answer = tools.chatbot_ask(question)
+                model="gpt-3.5-turbo",
+                messages=[
+                {"role": "system", "content": "You are name is pepper"},
+                {"role": "user", "content": question}]
+
+                response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages
+                )
+                answer = response['choices'][0]['message']['content']
                 print("[ROBOT]: "+ answer)
                 self.say(answer)
             except KeyboardInterrupt:

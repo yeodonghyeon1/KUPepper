@@ -72,7 +72,7 @@ class KUpepper:
                 if count == 1:
                     move_pepper = threading.Thread(target=self.move(0,0))
                     move_pepper.start()        
-
+    
                 if count == 3:
                     move_pepper = threading.Thread(target=self.move(3,0))
                     move_pepper.start()                      

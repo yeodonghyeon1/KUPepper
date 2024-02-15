@@ -7,6 +7,7 @@ from robot import Pepper
 import threading
 import sys
 import time
+import cv2
 from flask import Flask, render_template, redirect, url_for, request
 
 ############################################################################################
@@ -59,6 +60,11 @@ class KUpepper:
         self.window = Tkinter.Tk()
         self.base_interface_robot()
 
+        self.result_map= 0 
+        self.resolution=0 
+        self.offset_x =0 
+        self.offset_y =0
+
     #이벤트 작동 간 쓰레드 중지
     def stopThreadUntilOneTheEnd(self):
         if self.event.is_set():
@@ -83,8 +89,10 @@ class KUpepper:
 
     #기본 파라미터 구성
     def base_parameter(self):
-        self.robot.set_security_distance(distance=0.5)
+        self.robot.set_security_distance(distance=0.2)
         self.load_map_and_localization()
+
+        # print(self.robot.navigation_service.getMetricalMap())
 
     #페퍼 상호작용
     def interaction(self):
@@ -106,7 +114,7 @@ class KUpepper:
         try:
             while True:
                 self.stopThreadUntilOneTheEnd()
-                self.status_print()
+                # self.status_print()
                 # self.base_move()
                 self.web_interaction()
                 self.interaction()
@@ -121,10 +129,11 @@ class KUpepper:
     def load_map_and_localization(self):
         self.event.set()
         self.robot.stop_localization()
+        # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
+        # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
         self.robot.robot_localization()
         self.event.clear()
-    
     
     #기본 움직임
     def base_move(self):
@@ -144,6 +153,7 @@ class KUpepper:
         self.navigation_pepper_button()
         self.navigation_pepper_button2()
         self.webpage_reset_button()
+        self.show_map_button()
         #마지막에 있어야함
         self.window.mainloop()
     
@@ -154,7 +164,7 @@ class KUpepper:
 
     def navigation_mode_button_push(self):
         self.event.set()           
-        move_pepper = threading.Thread(target=self.move(2,0))
+        move_pepper = threading.Thread(target=self.move(0,2))
         move_pepper.start()  
         self.event.clear()
 
@@ -163,6 +173,36 @@ class KUpepper:
         move_pepper = threading.Thread(target=self.move(0,0))
         move_pepper.start()  
         self.event.clear()
+
+    def show_map_button_push(self):
+        self.event.set()               
+        show_map_thread = threading.Thread(target=self.robot.show_map)
+        show_map_thread.start()
+        show_map_thread.join()
+        imshow_map_thread = threading.Thread(target=self.imshow_map)
+        imshow_map_thread.start()   
+        self.event.clear()
+
+    def imshow_map(self):
+            cv2.imshow("RobotMap", self.robot.robot_map)
+            cv2.setMouseCallback("RobotMap", self.mouse_callback)
+            # self.map_x, self.map_y, self.map_width, self.map_height = cv2.selectROI("robot_map", robot_map, False)
+            # print(self.map_x, self.map_y, self.map_width, self.map_height)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+    def mouse_callback(self, event, x, y, flags, param):
+        # 마우스 왼쪽 버튼을 클릭할 때
+        if event == cv2.EVENT_LBUTTONDOWN:
+            map_y = (x * self.robot.resolution + self.robot.offset_x)
+            map_x = (y * self.robot.resolution - self.robot.offset_y)
+            print("mouse click:", map_x, map_y)
+            self.move(map_x,map_y)
+            pos = self.robot.pos[0]
+            goal_x = (pos[0] - self.robot.offset_x) / self.robot.resolution
+            goal_y = -1 * (pos[1] - self.robot.offset_y) / self.robot.resolution
+            self.robot.robot_map = cv2.circle(self.robot.robot_map, (int(goal_x), int(goal_y)), 3, (255, 0, 0), -1)
+            self.imshow_map()
 
     def web_page_reset(self):
         self.event.set()
@@ -199,6 +239,11 @@ class KUpepper:
 
     def webpage_reset_button(self):
         button = Tkinter.Button(self.window, text="웹페이지 리셋", command=self.web_page_reset)
+        button.pack()
+        self.window.bind("<")
+
+    def show_map_button(self):
+        button = Tkinter.Button(self.window, text="맵 확인", command=self.show_map_button_push)
         button.pack()
         self.window.bind("<")
         # label = Tkinter.Label(self.window, text="안녕하세요!")

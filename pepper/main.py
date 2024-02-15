@@ -9,9 +9,9 @@ import sys
 import time
 from flask import Flask, render_template, redirect, url_for, request
 
-#main.htmpsdfsdfaaa
-#main.htmp -> testaa
-#main.htmpSASDASD
+############################################################################################
+
+#flask 웹서버
 
 
 app = Flask(__name__)
@@ -23,7 +23,8 @@ web_page = "http://192.168.0.107/"
 def main_page():
     print("one")
     if request.method == 'POST':
-        return redirect(url_for('test'))
+        app.test2 = True
+        # return redirect(url_for('test'))
     return render_template('main.html')
 
 @app.route('/test')
@@ -32,30 +33,33 @@ def test():
     return "test page"
 
 
+
+#플라스크 변수: 전역변수랑 같음(웹 이벤트 작동 시 사용)
 app.test2 = False
+
+############################################################################################
+
 
 
 class KUpepper:
     def __init__(self, ip, port):
+        #페퍼 라이브러리
         self.ip = ip
         self.port = port
-        self.window = Tkinter.Tk()
         self.robot = Pepper(self.ip, self.port)
         self.robot.say("HI Pepper")
+
+        #베이스 라인 코드
         self.event = threading.Event()
-        self.event2 = threading.Event()
         self.base_thread = threading.Thread(target=self.baseline)
         self.base_thread.daemon = True
-        # self.web_thread = threading.Thread(target=self.robot.show_web(web_page))
-        # self.web_thread.daemon = True
-        # self.web_thread.start()
-        # self.robot.show_web(web_page)
         self.base_thread.start()
+
+        #GUI
+        self.window = Tkinter.Tk()
         self.base_interface_robot()
-        self.base_thread.join() 
-        #connect
-    
-    #돌아가는 이벤트가 없을때까지 기다림
+
+    #이벤트 작동 간 쓰레드 중지
     def stopThreadUntilOneTheEnd(self):
         if self.event.is_set():
             while True:
@@ -64,71 +68,75 @@ class KUpepper:
                 else:
                     break
 
-    #
-    def baseline(self):
-        count = 0
-        self.robot.set_security_distance(distance=0.5)
-        # print(robot)
-        #qd
+    #현재 상태 출력 모음
+    def status_print(self):
+        print("focus activity:", self.robot.autonomous_life_service.focusedActivity())
+        print("context:", self.robot.memory_service.getData('Diagnosis/Temperature/Tablet/Error'))
+        # print("key list:", self.robot.memory_service.getDataListName( ))
+        # print("context:", self.robot.autonomous_life_service.getFocusHistory())    
+        # print("context:", self.robot.autonomous_life_service.getFocusContext())
+        # print("laser x:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/X/Sensor/Value"))
+        # print("laser y:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/Y/Sensor/Value"))
+        print("laser front value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Reg/Status/Sensor/Value"))
+        print("usersession:", self.robot.user_session.getOpenUserSessions())
+        print("front sonar value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))
 
+    #기본 파라미터 구성
+    def base_parameter(self):
+        self.robot.set_security_distance(distance=0.5)
+        self.load_map_and_localization()
+
+    #페퍼 상호작용
+    def interaction(self):
+        #머리 터치 시 상호작용
+        if self.robot.memory_service.getData("Device/SubDeviceList/Head/Touch/Front/Sensor/Value"):
+            self.robot.say("Get your hands off my head loser")
+    
+    #웹 상호작용
+    def web_interaction(self):
+        #이동 상호작용
+        if app.test2 == True:
+            self.navigation_mode_button_push2()
+            app.test2 = False
+
+    #기본 루프
+    def baseline(self):
+        while_count = 0
+        self.base_parameter()
         try:
             while True:
-                # print("key list:", self.robot.memory_service.getDataListName( ))
-
-                print()
-                print("focus activity:", self.robot.autonomous_life_service.focusedActivity())
-                # print("context:", self.robot.autonomous_life_service.getFocusHistory())    
-                print("context:", self.robot.memory_service.getData('Diagnosis/Temperature/Tablet/Error'))
-
-                # print("context:", self.robot.autonomous_life_service.getFocusContext())
-                self.robot.tablet_service.reloadPage(True)
-                print("test", app.test2)
-                
                 self.stopThreadUntilOneTheEnd()
-                # if count == 0:
-                #     self.localize = threading.Thread(target= self.localization())
-                #     self.localize.start()                
-
-                if app.test2 == True:
-                    self.navigation_mode_button_push2()
-                    app.test2 = False
-
-                # if count == 3:
-                #     move_pepper = threading.Thread(target=self.move(3,0))
-                #     move_pepper.start()                      
-                # self.sonar_getdata()
-                # self.security_data()
-                print("usersession:", self.robot.user_session.getOpenUserSessions())
-                if count == 99999:
-                    explor = threading.Thread(target=self.robot.exploration_mode(1))
-                    explor.start()
-                    print("explor mode start")
-                time.sleep(0.1)
+                self.status_print()
                 # self.base_move()
-                count += 1
-                print("front sonar value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))
-                if self.robot.memory_service.getData("Device/SubDeviceList/Head/Touch/Front/Sensor/Value"):
-                    self.robot.say("Get your hands off my head loser")
-                # print("laser x:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/X/Sensor/Value"))
-                # print("laser y:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/Y/Sensor/Value"))
-                print("laser front value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Reg/Status/Sensor/Value"))
-                # if count > 3:
-                #     pos =self.robot.navigation_service.getRobotPositionInMap()
-                #     print("robot_pos: " ,pos)
+                self.web_interaction()
+                self.interaction()
+                time.sleep(0.1)
+                while_count += 1
         except KeyboardInterrupt:
             #stop
             sys.exit(0)
         print("exit")
 
-    def localization(self):
-        self.event2.set()
+    #맵 로드 후 로컬라이제이션
+    def load_map_and_localization(self):
+        self.event.set()
         self.robot.stop_localization()
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
         self.robot.robot_localization()
-        #print(self.robot.navigation_service.getMetricalMap())
+        self.event.clear()
+    
+    
+    #기본 움직임
+    def base_move(self):
+        # print((round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)
+        # self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)
+        # self.robot.motion_service.move(1,0,0)
+        print((round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
+        self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
+        self.robot.motion_service.move(1,0,0)
 
-        self.event2.clear()
 
+    #GUI에 기능 적용
     def base_interface_robot(self):
         self.window.geometry("1200x600")
         self.window.title("pepper")
@@ -138,24 +146,20 @@ class KUpepper:
         self.webpage_reset_button()
         #마지막에 있어야함
         self.window.mainloop()
-        
+    
     def exploration_mode_button_push(self):
         self.event.set()
         self.robot.exploration_mode(1)
         self.event.clear()
 
     def navigation_mode_button_push(self):
-        self.event.set()
-        self.localize = threading.Thread(target= self.localization())
-        self.localize.start()                
+        self.event.set()           
         move_pepper = threading.Thread(target=self.move(2,0))
         move_pepper.start()  
         self.event.clear()
 
     def navigation_mode_button_push2(self):
-        self.event.set()
-        self.localize = threading.Thread(target= self.localization())
-        self.localize.start()                
+        self.event.set()               
         move_pepper = threading.Thread(target=self.move(0,0))
         move_pepper.start()  
         self.event.clear()
@@ -168,40 +172,16 @@ class KUpepper:
         self.event.clear()
 
     def move(self,x,y):
-        self.event2.set()
+        self.event.set()
         self.robot.navigate_to(x, y)
-        self.event2.clear()
-        print("end")
+        self.event.clear()
 
 
     def session_reset(self):
         self.robot.session.reset
 
-    #error
-    def sonar_getdata(self):
-        print("sonarleft" , self.robot.sonar_service.SonarLeftDetected())
-        print("sonarright" ,self.robot.sonar_service.SonarRightDetected())
-        print("sonarnothingleft", self.robot.sonar_service.SonarLeftNothingDetected())
-        print("sonarnothingright",self.robot.sonar_service.SonarRightNothingDetected())
-        pass
 
-    #no need
-    def security_data(self):
-        print("othogna:" ,self.robot.motion_service.getOrthogonalSecurityDistance())
-        print("tangential:" ,self.robot.motion_service.getTangentialSecurityDistance())
-        print("enable security: ", self.robot.motion_service.getExternalCollisionProtectionEnabled("All"))
-        # print("aa: ", self.robot.motion_service.isCollision())
-
-
-    #기본 움직임
-    def base_move(self):
-        # print((round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)
-        # self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)
-        # self.robot.motion_service.move(1,0,0)
-        print((round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
-        self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
-        self.robot.motion_service.move(1,0,0)
-
+    #gui 기능(버튼 등) 설계
     def navigation_pepper_button(self):
         button = Tkinter.Button(self.window, text="이동(2,0)", command=self.navigation_mode_button_push)
         button.pack()
@@ -224,20 +204,17 @@ class KUpepper:
         # label = Tkinter.Label(self.window, text="안녕하세요!")
         # # 레이블 위치 설정
         # label.place(x=150, y=150)
-        
-
         # 버튼 위치 설정
         # button.place(x=180, y=200)
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
     
-count_temp = 0
+
 if __name__ == "__main__":
     base_thread = threading.Thread(target=main)
     base_thread.daemon = True
     base_thread.start()
-    print(count_temp)
     app.run(host=web_host, port=80, debug=False)
 
     # main()

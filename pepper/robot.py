@@ -808,11 +808,11 @@ class Pepper:
             pos =self.navigation_service.getRobotPositionInMap()
             print("robot_pos: " ,pos)
             self.navigation_service.stopLocalization()
-            print("[INFO]: Successfully got into location")
+            print("[INFO]: Successfully got into location(navigation_move)")
             self.say("At your command")
         except Exception as error:
             print(error)
-            print("[ERROR]: Failed to got into location")
+            print("[ERROR]: Failed to got into location(navigation_move)")
             self.say("I cannot move in that direction")
 
     def unsubscribe_effector(self):

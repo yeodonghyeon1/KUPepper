@@ -25,7 +25,7 @@ robot.say("HI HIHIHIHIHIHIHI")
 # robot.show_web("http://192.168.0.82:80/")
 # robot.sound_detect_service.setParameter("Sensitivity", 1.0)
 # robot.listen("en-US")
-robot.chatbot()
+# robot.chatbot()
 #test sonar
 # print(robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))
 # print(robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))

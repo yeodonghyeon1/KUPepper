@@ -12,6 +12,8 @@ from flask import Flask, render_template, redirect, url_for, request
 #main.htmpsdfsdfaaa
 #main.htmp -> testaa
 #main.htmpSASDASD
+
+
 app = Flask(__name__)
 web_host = "192.168.0.107"
 web_page = "http://192.168.0.107/"
@@ -19,12 +21,13 @@ web_page = "http://192.168.0.107/"
 def main_page():
     print("one")
     if request.method == 'POST':
-        print("aa")
+        
         return redirect(url_for('test'))
     return render_template('main.html')
 
 @app.route('/test')
 def test():
+    test2 = True
     return "test page"
 
 
@@ -39,9 +42,11 @@ class KUpepper:
         self.event2 = threading.Event()
         self.base_thread = threading.Thread(target=self.baseline)
         self.base_thread.daemon = True
-        self.robot.show_web(web_page)
-        self.robot.tablet_service.turnScreenOn(True)
-        self.base_thread.start()        
+        # self.web_thread = threading.Thread(target=self.robot.show_web(web_page))
+        # self.web_thread.daemon = True
+        # self.web_thread.start()
+        # self.robot.show_web(web_page)
+        self.base_thread.start()
         self.base_interface_robot()
         self.base_thread.join() 
         #connect
@@ -61,37 +66,48 @@ class KUpepper:
         self.robot.set_security_distance(distance=0.5)
         # print(robot)
         #qd
+
         try:
             while True:
-                self.stopThreadUntilOneTheEnd()
+                # print("key list:", self.robot.memory_service.getDataListName( ))
+
+                print()
+                print("focus activity:", self.robot.autonomous_life_service.focusedActivity())
+                # print("context:", self.robot.autonomous_life_service.getFocusHistory())    
+                print("context:", self.robot.memory_service.getData('Diagnosis/Temperature/Tablet/Error'))
+
+                # print("context:", self.robot.autonomous_life_service.getFocusContext())
+                self.robot.tablet_service.reloadPage(True)
+
                 
-                if count == 0:
-                    self.localize = threading.Thread(target= self.localization())
-                    self.localize.start()                
-         
-                if count == 1:
-                    move_pepper = threading.Thread(target=self.move(0,0))
-                    move_pepper.start()        
-    
-                if count == 3:
-                    move_pepper = threading.Thread(target=self.move(3,0))
-                    move_pepper.start()                      
+                self.stopThreadUntilOneTheEnd()
+                # if count == 0:
+                #     self.localize = threading.Thread(target= self.localization())
+                #     self.localize.start()                
+
+                # if count == 3:
+                #     self.navigation_mode_button_push2()
+
+
+                # if count == 3:
+                #     move_pepper = threading.Thread(target=self.move(3,0))
+                #     move_pepper.start()                      
                 # self.sonar_getdata()
                 # self.security_data()
-                print(self.robot.user_session.getOpenUserSessions())
+                print("usersession:", self.robot.user_session.getOpenUserSessions())
                 if count == 99999:
                     explor = threading.Thread(target=self.robot.exploration_mode(1))
                     explor.start()
                     print("explor mode start")
                 time.sleep(0.1)
-                self.base_move()
+                # self.base_move()
                 count += 1
-                print(self.robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))
+                print("front sonar value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/Front/Sonar/Sensor/Value"))
                 if self.robot.memory_service.getData("Device/SubDeviceList/Head/Touch/Front/Sensor/Value"):
                     self.robot.say("Get your hands off my head loser")
                 # print("laser x:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/X/Sensor/Value"))
                 # print("laser y:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Vertical/Right/Seg01/Y/Sensor/Value"))
-                print("a", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Reg/Status/Sensor/Value"))
+                print("laser front value:", self.robot.memory_service.getData("Device/SubDeviceList/Platform/LaserSensor/Front/Reg/Status/Sensor/Value"))
                 # if count > 3:
                 #     pos =self.robot.navigation_service.getRobotPositionInMap()
                 #     print("robot_pos: " ,pos)
@@ -103,7 +119,7 @@ class KUpepper:
     def localization(self):
         self.event2.set()
         self.robot.stop_localization()
-        self.robot.load_map(file_name="2024-02-06T040923.038Z.explo")
+        self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
         self.robot.robot_localization()
         #print(self.robot.navigation_service.getMetricalMap())
 
@@ -113,6 +129,8 @@ class KUpepper:
         self.window.geometry("1200x600")
         self.window.title("pepper")
         self.exploration_pepper_button()
+        self.navigation_pepper_button()
+        self.navigation_pepper_button2()
         #마지막에 있어야함
         self.window.mainloop()
         
@@ -121,6 +139,21 @@ class KUpepper:
         self.robot.exploration_mode(1)
         self.event.clear()
 
+    def navigation_mode_button_push(self):
+        self.event.set()
+        self.localize = threading.Thread(target= self.localization())
+        self.localize.start()                
+        move_pepper = threading.Thread(target=self.move(2,0))
+        move_pepper.start()  
+        self.event.clear()
+
+    def navigation_mode_button_push2(self):
+        self.event.set()
+        self.localize = threading.Thread(target= self.localization())
+        self.localize.start()                
+        move_pepper = threading.Thread(target=self.move(0,0))
+        move_pepper.start()  
+        self.event.clear()
 
     def move(self,x,y):
         self.event2.set()
@@ -157,7 +190,15 @@ class KUpepper:
         self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
         self.robot.motion_service.move(1,0,0)
 
+    def navigation_pepper_button(self):
+        button = Tkinter.Button(self.window, text="이동(2,0)", command=self.navigation_mode_button_push)
+        button.pack()
+        self.window.bind("<")
 
+    def navigation_pepper_button2(self):
+        button = Tkinter.Button(self.window, text="이동(0,0)", command=self.navigation_mode_button_push2)
+        button.pack()
+        self.window.bind("<")
 
     def exploration_pepper_button(self):
         button = Tkinter.Button(self.window, text="맵핑 모드", command=self.exploration_mode_button_push)
@@ -172,6 +213,7 @@ class KUpepper:
         # button.place(x=180, y=200)
 
 def main():
+
     pepper = KUpepper("192.168.0.125", "9559")
     
 count_temp = 0

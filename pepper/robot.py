@@ -27,15 +27,15 @@ from PIL import Image
 from callbacks import HumanGreeter, ReactToTouch
 import os
 import pickle
-import openai
+# import openai
 
-openai.api_key = "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"
+# openai.api_key = "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"
 
-response = openai.ChatCompletion.create(
-  model="gpt-3.5-turbo",
-  messages=[
-        {"role": "system", "content": "You are a helpful assistant."}]
-)
+# response = openai.ChatCompletion.create(
+#   model="gpt-3.5-turbo",
+#   messages=[
+#         {"role": "system", "content": "You are a helpful assistant."}]
+# )
 tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp_files")
 if not os.path.exists(tmp_path):
     os.makedirs(tmp_path)
@@ -214,7 +214,7 @@ class Pepper:
     def show_web(self, website):
         print("Showing a website on the tablet")
         self.tablet_service.showWebview(website)
-
+        time.sleep(1000)
     def detect_touch(self):
         react_to_touch = ReactToTouch(self.app)
         print("Waiting for touch...")
@@ -612,7 +612,7 @@ class Pepper:
 
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([1., 0., 0.])
+            # self.navigation_service.navigateToInMap([1., 0., 0.])
             localization = self.navigation_service.getRobotPositionInMap()
             self.localization = localization[0]
             print("localization", self.localization)

@@ -651,7 +651,7 @@ class Pepper:
             
             self.slam_map = self.navigation_service.loadExploration(file_path+file_name)
             print("[INFO]: Map '" + file_name + "' loaded")
-            print(self.slam_map)    
+            print("load Map Successful:", self.slam_map)    
         except:
             print("load Map error")
     def subscribe_camera(self, camera, resolution, fps):

@@ -629,7 +629,7 @@ class Pepper:
         return robot_map
 
 
-    #TODO localization이 어느 위치에 있던 0,0에 가깝게 설정되는 문제 존재
+    #TODO localization이 어느 위치에 있던 0,0에 가깝게 설정되는 문제 존재 @yeodonghyeon1
     def robot_localization(self):
         """
         Localize a robot in a map

@@ -59,7 +59,8 @@ class Pepper:
     >>> pepper = Pepper("192.169.0.1", 1234)
 
     """
-
+    #변수 설명
+    #self.robot_map: main.py에서 robot_map 사용하기 때문에 사용.
     def __init__(self, ip_address, port=9559):
         self.session = qi.Session()
         # self.map_x = 0
@@ -472,6 +473,17 @@ class Pepper:
         im.save(photoName)
         return photoName
 
+    #수동 slam 모드
+    def slam(self, status):
+
+        if status == True:
+            self.navigation_service.startMapping()
+        else:
+            self.navigation_service.stopExploration()
+            map_file = self.navigation_service.saveExploration()
+            print("[INFO]: Map file stored: " + map_file)
+
+
     def exploration_mode(self, radius):
         """
         Start exploration mode when robot it performing a SLAM
@@ -555,11 +567,23 @@ class Pepper:
 
         print(goal_x * resolution + offset_x)
         print(-1 * (goal_y * resolution - offset_y))
+
+        center_x = (self.localization_first[0] - offset_x) / resolution
+        center_y = (self.localization_first[1] - offset_x) / resolution
+        import math
+        angle = self.localization_first[2]
+        angle = math.degrees(angle)
+        center = (center_x , center_y)
+        M = cv2.getRotationMatrix2D(center, angle, 1)
+        rotated = cv2.warpAffine(img, M, (map_width, map_height))
+        img = rotated
+        
+        
         
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
+        cv2.circle(img, (int(center_x), int(center_y)), 3, (0, 0, 255), -1)
         robot_map = img
-        Image.frombuffer('L',  (map_width, map_height), img, 'raw', 'L', 0, 1).show()
+        # Image.frombuffer('L',  (map_width, map_height), img, 'raw', 'L', 0, 1).show()
 
         # robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
         self.robot_map = robot_map
@@ -620,7 +644,12 @@ class Pepper:
 
         goal_x = (x - offset_x) / resolution
         goal_y = -1 * (y - offset_y) / resolution
-
+        # path = self.navigation_service.getExplorationPath()
+        # for i in path:
+        #     print(i)
+        #     path_x = (i[0] - offset_x) / resolution
+        #     path_y = -1 * (i[1] - offset_y) / resolution
+        #     img = cv2.circle(img, (int(path_x), int(path_y)), 1, (0, 255, 0), -1)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
 
@@ -628,17 +657,25 @@ class Pepper:
 
         return robot_map
 
+
+    #load 맵 이후 첫 번째 localization할 때 사용
     def first_localization(self):
         try:
+            self.navigation_service.relocalizeInMap([0., 0.])    
             self.navigation_service.startLocalization()
+            a =time.sleep(3)
+            print(a)
+
             self.navigation_service.navigateToInMap([2., 0., 0.])
+            # self.motion_service.move(0,0,1)
+
             localization = self.navigation_service.getRobotPositionInMap()
             # exploration_path = self.navigation_service.getExplorationPath()
-            self.localization = localization[0]
-            print("localization", self.localization)
+            self.localization_first = localization[0]
+            print("localization", self.localization_first)
+
             print("[INFO]: Localization complete")
 
-            self.navigation_service.stopLocalization()
         except Exception as error:
             print(error)
             print("[ERROR]: Localization failed")
@@ -656,6 +693,8 @@ class Pepper:
 
         try:
             self.navigation_service.startLocalization()
+            # self.navigation_service.relocalizeInMap()
+
             # self.navigation_service.navigateToInMap([2., 0., 0.])
             localization = self.navigation_service.getRobotPositionInMap()
             # exploration_path = self.navigation_service.getExplorationPath()
@@ -847,10 +886,15 @@ class Pepper:
         print("[INFO]: Trying to navigate into specified location")
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([x, y, 0])
+            # self.navigation_service.navigateToInMap(x, y)
             pos =self.navigation_service.getRobotPositionInMap()
+            pos2 = pos[0]
+            self.navigation_service.navigateToInMap([x, y, 0])
+
+
             print("robot_pos: " ,pos)
             self.pos = pos
+
             self.navigation_service.stopLocalization()
             print("[INFO]: Successfully got into location(navigation_move)")
             self.say("Arrived at destination")

@@ -125,6 +125,11 @@ class KUpepper:
             sys.exit(0)
         print("exit")
 
+    #맵 종류
+    #2024-02-14T082317.984Z.explo(8층 pbl실 기본 explore() 맵)
+    #2024-02-16T133625.109Z.explo(앞 부분만 찍은 explore() 맵)
+        #2024-02-16T140640.347Z.explo
+        #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
         self.event.set()
@@ -132,6 +137,7 @@ class KUpepper:
         # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
         # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
+
         self.robot.first_localization()
         self.event.clear()
     
@@ -154,12 +160,14 @@ class KUpepper:
         self.navigation_pepper_button2()
         self.webpage_reset_button()
         self.show_map_button()
+        self.slam_start_button()
+        self.slam_stop_button()
         #마지막에 있어야함
         self.window.mainloop()
     
     def exploration_mode_button_push(self):
         self.event.set()
-        self.robot.exploration_mode(1)
+        self.robot.exploration_mode(5)
         self.event.clear()
 
     def navigation_mode_button_push(self):
@@ -218,6 +226,15 @@ class KUpepper:
         self.robot.navigate_to(x, y)
         self.event.clear()
 
+    def slam_start_button_push(self):
+        self.event.set()
+        self.slam_start_thread = threading.Thread(target=self.robot.slam(status=True))
+        self.event.clear()
+
+    def slam_stop_button_push(self):
+        self.event.set()
+        self.slam_stop_thread = threading.Thread(target=self.robot.slam(status=False))
+        self.event.clear()
 
     def session_reset(self):
         self.robot.session.reset
@@ -246,6 +263,16 @@ class KUpepper:
 
     def show_map_button(self):
         button = Tkinter.Button(self.window, text="맵 확인", command=self.show_map_button_push)
+        button.pack()
+        self.window.bind("<")
+
+    def slam_start_button(self):
+        button = Tkinter.Button(self.window, text="수동 맵핑 시작", command=self.slam_start_button_push)
+        button.pack()
+        self.window.bind("<")
+
+    def slam_stop_button(self):
+        button = Tkinter.Button(self.window, text="수동 맵핑 금지", command=self.slam_stop_button_push)
         button.pack()
         self.window.bind("<")
         # label = Tkinter.Label(self.window, text="안녕하세요!")

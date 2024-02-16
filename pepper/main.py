@@ -132,7 +132,7 @@ class KUpepper:
         # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
         # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
-        self.robot.robot_localization()
+        self.robot.first_localization()
         self.event.clear()
     
     #기본 움직임

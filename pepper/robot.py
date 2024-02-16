@@ -628,8 +628,22 @@ class Pepper:
 
         return robot_map
 
+    def first_localization(self):
+        try:
+            self.navigation_service.startLocalization()
+            self.navigation_service.navigateToInMap([2., 0., 0.])
+            localization = self.navigation_service.getRobotPositionInMap()
+            # exploration_path = self.navigation_service.getExplorationPath()
+            self.localization = localization[0]
+            print("localization", self.localization)
+            print("[INFO]: Localization complete")
 
-    #TODO localization이 어느 위치에 있던 0,0에 가깝게 설정되는 문제 존재 @yeodonghyeon1
+            self.navigation_service.stopLocalization()
+        except Exception as error:
+            print(error)
+            print("[ERROR]: Localization failed")
+
+    
     def robot_localization(self):
         """
         Localize a robot in a map
@@ -642,7 +656,7 @@ class Pepper:
 
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([2., 0., 0.])
+            # self.navigation_service.navigateToInMap([2., 0., 0.])
             localization = self.navigation_service.getRobotPositionInMap()
             # exploration_path = self.navigation_service.getExplorationPath()
             self.localization = localization[0]

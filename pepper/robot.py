@@ -532,18 +532,22 @@ class Pepper:
         img = numpy.array(img, numpy.uint8)
 
         resolution = result_map[0]
-
+        #
         self.robot_localization()
 
         offset_x = result_map[3][0]
         offset_y = result_map[3][1]
+
+        #현재 localize된 pepper 좌표
         x = self.localization[0]
         y = self.localization[1]
-
+        print("resolution:", resolution)
         print("offset_x:", offset_x)
-        print("offset_y:", offset_x)
+        print("offset_y:", offset_y)
         print("x:",x)
         print("y:",y)
+
+        #지도 상 좌표
         goal_x = (x - offset_x) / resolution
         goal_y = -1 * (y - offset_y) / resolution
         print("goal_x:",goal_x)
@@ -554,8 +558,10 @@ class Pepper:
         
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
+        robot_map = img
+        Image.frombuffer('L',  (map_width, map_height), img, 'raw', 'L', 0, 1).show()
 
-        robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
+        # robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
         self.robot_map = robot_map
         self.resolution = resolution
         self.offset_x = offset_x
@@ -623,7 +629,7 @@ class Pepper:
         return robot_map
 
 
-
+    #TODO localization이 어느 위치에 있던 0,0에 가깝게 설정되는 문제 존재
     def robot_localization(self):
         """
         Localize a robot in a map
@@ -636,8 +642,9 @@ class Pepper:
 
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([0., 0., 0.])
+            self.navigation_service.navigateToInMap([2., 0., 0.])
             localization = self.navigation_service.getRobotPositionInMap()
+            # exploration_path = self.navigation_service.getExplorationPath()
             self.localization = localization[0]
             print("localization", self.localization)
             print("[INFO]: Localization complete")

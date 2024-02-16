@@ -186,23 +186,25 @@ class KUpepper:
     def imshow_map(self):
             cv2.imshow("RobotMap", self.robot.robot_map)
             cv2.setMouseCallback("RobotMap", self.mouse_callback)
-            # self.map_x, self.map_y, self.map_width, self.map_height = cv2.selectROI("robot_map", robot_map, False)
-            # print(self.map_x, self.map_y, self.map_width, self.map_height)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
     def mouse_callback(self, event, x, y, flags, param):
         # 마우스 왼쪽 버튼을 클릭할 때
         if event == cv2.EVENT_LBUTTONDOWN:
-            map_y = (x * self.robot.resolution + self.robot.offset_x)
-            map_x = (y * self.robot.resolution - self.robot.offset_y)
+            # map_y = (x * self.robot.resolution + self.robot.offset_x)
+            # map_x = (y * self.robot.resolution - self.robot.offset_y)
+            map_x = (x * self.robot.resolution + self.robot.offset_x)
+            map_y = -1 * (y * self.robot.resolution - self.robot.offset_y)
+            # map_x = x
+            # map_y = y
             print("mouse click:", map_x, map_y)
             self.move(map_x,map_y)
             pos = self.robot.pos[0]
             goal_x = (pos[0] - self.robot.offset_x) / self.robot.resolution
-            goal_y = -1 * (pos[1] - self.robot.offset_y) / self.robot.resolution
+            goal_y = -1 * ((pos[1] - self.robot.offset_y) / self.robot.resolution)
+            self.show_map_button_push()
             self.robot.robot_map = cv2.circle(self.robot.robot_map, (int(goal_x), int(goal_y)), 3, (255, 0, 0), -1)
-            self.imshow_map()
 
     def web_page_reset(self):
         self.event.set()

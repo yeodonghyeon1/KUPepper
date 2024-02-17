@@ -27,7 +27,15 @@ from PIL import Image
 from callbacks import HumanGreeter, ReactToTouch
 import os
 import pickle
+# import openai
 
+# openai.api_key = "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"
+
+# response = openai.ChatCompletion.create(
+#   model="gpt-3.5-turbo",
+#   messages=[
+#         {"role": "system", "content": "You are a helpful assistant."}]
+# )
 tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp_files")
 if not os.path.exists(tmp_path):
     os.makedirs(tmp_path)
@@ -51,12 +59,17 @@ class Pepper:
     >>> pepper = Pepper("192.169.0.1", 1234)
 
     """
-
+    #변수 설명
+    #self.robot_map: main.py에서 robot_map 사용하기 때문에 사용.
     def __init__(self, ip_address, port=9559):
         self.session = qi.Session()
-
+        # self.map_x = 0
+        # self.map_y = 0
+        # self.map_width = 0
+        # self.map_height = 0
+        self.robot_map = 0
         self.session.connect("tcp://{0}:{1}".format(ip_address, port))
-
+        
         self.ip_address = ip_address
         self.port = port
         connection_url = "tcp://" + ip_address + ":" + str(port)
@@ -72,9 +85,9 @@ class Pepper:
         #수정
         self.user_session = self.session.service("ALUserSession")
         self.sonar_service = self.session.service("ALLocalization")
-        
+        self.sound_detect_service = self.session.service("ALSoundDetection")
+ 
         self.detect_service = self.session.service("ALVisualCompass")
-
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")
         self.tracker_service = self.session.service("ALTracker")
@@ -206,7 +219,6 @@ class Pepper:
     def show_web(self, website):
         print("Showing a website on the tablet")
         self.tablet_service.showWebview(website)
-
     def detect_touch(self):
         react_to_touch = ReactToTouch(self.app)
         print("Waiting for touch...")
@@ -461,6 +473,17 @@ class Pepper:
         im.save(photoName)
         return photoName
 
+    #수동 slam 모드
+    def slam(self, status):
+
+        if status == True:
+            self.navigation_service.startMapping()
+        else:
+            self.navigation_service.stopExploration()
+            map_file = self.navigation_service.saveExploration()
+            print("[INFO]: Map file stored: " + map_file)
+
+
     def exploration_mode(self, radius):
         """
         Start exploration mode when robot it performing a SLAM
@@ -522,35 +545,74 @@ class Pepper:
         img = numpy.array(img, numpy.uint8)
 
         resolution = result_map[0]
-
+        #
         self.robot_localization()
 
         offset_x = result_map[3][0]
         offset_y = result_map[3][1]
+
+        #현재 localize된 pepper 좌표
         x = self.localization[0]
         y = self.localization[1]
+        print("resolution:", resolution)
+        print("offset_x:", offset_x)
+        print("offset_y:", offset_y)
+        print("x:",x)
+        print("y:",y)
 
+        #지도 상 좌표
         goal_x = (x - offset_x) / resolution
         goal_y = -1 * (y - offset_y) / resolution
+        print("goal_x:",goal_x)
+        print("goal_y:",goal_y)
 
+        print(goal_x * resolution + offset_x)
+        print(-1 * (goal_y * resolution - offset_y))
+
+        center_x = (self.localization_first[0] - offset_x) / resolution
+        center_y = (self.localization_first[1] - offset_x) / resolution
+        import math
+        angle = self.localization_first[2]
+        angle = math.degrees(angle)
+        center = (center_x , center_y)
+        M = cv2.getRotationMatrix2D(center, angle, 1)
+        rotated = cv2.warpAffine(img, M, (map_width, map_height))
+        img = rotated
+        
+        
+        
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
+        cv2.circle(img, (int(center_x), int(center_y)), 3, (0, 0, 255), -1)
+        robot_map = img
+        # Image.frombuffer('L',  (map_width, map_height), img, 'raw', 'L', 0, 1).show()
 
-        robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
-
+        # robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
+        self.robot_map = robot_map
+        self.resolution = resolution
+        self.offset_x = offset_x
+        self.offset_y = offset_y
         print("[INFO]: Showing the map")
+        return resolution, offset_x, offset_y
+        # if on_robot:
+        #     # TODO: It requires a HTTPS server running. This should be somehow automated.
+        #     cv2.imwrite(os.path.join(tmp_path, "map.png"), robot_map)
+        #     # self.show_web(remote_ip + ":8000/map.png")
+        #     # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
+        # else:
+        #     print("this")
+        #     cv2.imshow("RobotMap", robot_map)
+        #     cv2.setMouseCallback("RobotMap", self.mouse_callback)
+        #     # self.map_x, self.map_y, self.map_width, self.map_height = cv2.selectROI("robot_map", robot_map, False)
+        #     # print(self.map_x, self.map_y, self.map_width, self.map_height)
+        #     cv2.waitKey(0)
+        #     cv2.destroyAllWindows()
 
-        if on_robot:
-            # TODO: It requires a HTTPS server running. This should be somehow automated.
-            cv2.imwrite(os.path.join(tmp_path, "map.png"), robot_map)
-            # self.show_web(remote_ip + ":8000/map.png")
-            # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
-        else:
-            print("this")
-            cv2.imshow("RobotMap", robot_map)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
+    def mouse_callback(self, event, x, y, flags, param):
+        # 마우스 왼쪽 버튼을 클릭할 때
+        self.map_x = x
+        self.map_y = y
+        if event == cv2.EVENT_LBUTTONDOWN:
+            print("마우스 좌클릭:", self.map_x, self.map_y)
 
     def get_map(self, on_robot=False, remote_ip="lcoalhost"):
         """
@@ -583,7 +645,12 @@ class Pepper:
 
         goal_x = (x - offset_x) / resolution
         goal_y = -1 * (y - offset_y) / resolution
-
+        # path = self.navigation_service.getExplorationPath()
+        # for i in path:
+        #     print(i)
+        #     path_x = (i[0] - offset_x) / resolution
+        #     path_y = -1 * (i[1] - offset_y) / resolution
+        #     img = cv2.circle(img, (int(path_x), int(path_y)), 1, (0, 255, 0), -1)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         cv2.circle(img, (int(goal_x), int(goal_y)), 3, (0, 0, 255), -1)
 
@@ -592,7 +659,29 @@ class Pepper:
         return robot_map
 
 
+    #load 맵 이후 첫 번째 localization할 때 사용
+    def first_localization(self):
+        try:
+            self.navigation_service.relocalizeInMap([0., 0.])    
+            self.navigation_service.startLocalization()
+            a =time.sleep(3)
+            print(a)
 
+            self.navigation_service.navigateToInMap([2., 0., 0.])
+            # self.motion_service.move(0,0,1)
+
+            localization = self.navigation_service.getRobotPositionInMap()
+            # exploration_path = self.navigation_service.getExplorationPath()
+            self.localization_first = localization[0]
+            print("localization", self.localization_first)
+
+            print("[INFO]: Localization complete")
+
+        except Exception as error:
+            print(error)
+            print("[ERROR]: Localization failed")
+
+    
     def robot_localization(self):
         """
         Localize a robot in a map
@@ -605,8 +694,11 @@ class Pepper:
 
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([1., 0., 0.])
+            # self.navigation_service.relocalizeInMap()
+
+            # self.navigation_service.navigateToInMap([2., 0., 0.])
             localization = self.navigation_service.getRobotPositionInMap()
+            # exploration_path = self.navigation_service.getExplorationPath()
             self.localization = localization[0]
             print("localization", self.localization)
             print("[INFO]: Localization complete")
@@ -622,7 +714,7 @@ class Pepper:
         self.navigation_service.stopLocalization()
         print("[INFO]: Localization stopped")
 
-    def load_map(self, file_name, file_path="./"):
+    def load_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):
         """
         Load stored map on a robot. It will find a map in default location,
         in other cases alternative path can be specifies by `file_name`.
@@ -641,10 +733,9 @@ class Pepper:
         # image = cv2.imread(path+file_path+file_name)
         # print(image)
         try:
-            
             self.slam_map = self.navigation_service.loadExploration(file_path+file_name)
             print("[INFO]: Map '" + file_name + "' loaded")
-            print(self.slam_map)    
+            print("load Map:", self.slam_map)    
         except:
             print("load Map error")
     def subscribe_camera(self, camera, resolution, fps):
@@ -795,20 +886,24 @@ class Pepper:
         """
         print("[INFO]: Trying to navigate into specified location")
         try:
-
             self.navigation_service.startLocalization()
-
-            self.navigation_service.navigateToInMap([x, y, 0])
+            # self.navigation_service.navigateToInMap(x, y)
             pos =self.navigation_service.getRobotPositionInMap()
+            pos2 = pos[0]
+            self.navigation_service.navigateToInMap([x, y, 0])
+
+
             print("robot_pos: " ,pos)
+            self.pos = pos
+
             self.navigation_service.stopLocalization()
-            print("[INFO]: Successfully got into location")
-            self.say("At your command")
+            print("[INFO]: Successfully got into location(navigation_move)")
+            self.say("Arrived at destination")
         except Exception as error:
             print(error)
-            print("[ERROR]: Failed to got into location")
+            print("[ERROR]: Failed to got into location(navigation_move)")
             self.say("I cannot move in that direction")
-
+        
     def unsubscribe_effector(self):
         """
         Unsubscribe a end-effector after tracking some object
@@ -1148,14 +1243,23 @@ class Pepper:
 
         ..warning:: This is not currently working
         """
-        
-        tools.chatbot_init()
+    
         while True:
             try:
                 self.set_awareness(False)
-                question = self.listen()
+                # question = self.listen()
+                question = "sdasdf"
                 print("[USER]: " + question)
-                answer = tools.chatbot_ask(question)
+                model="gpt-3.5-turbo",
+                messages=[
+                {"role": "system", "content": "You are name is pepper"},
+                {"role": "user", "content": question}]
+
+                response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages
+                )
+                answer = response['choices'][0]['message']['content']
                 print("[ROBOT]: "+ answer)
                 self.say(answer)
             except KeyboardInterrupt:

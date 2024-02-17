@@ -995,7 +995,7 @@ class Pepper:
             else:
                 self.say("I guess your mood is " + emotions[emotion_index])
 
-    def listen_to(self, vocabulary, language="Cz"):
+    def listen_to(self, vocabulary, language="En"):
         """
         Listen and match the vocabulary which is passed as parameter.
 

@@ -5,12 +5,8 @@ import time
 from robot import Pepper
 
 robot = Pepper("192.168.0.125", 9559)
-# Display the index.html page of a behavior name j-tablet-browser
-# The index.html must be in a folder html in the behavior folder
-robot.tablet_service.loadApplication("The dialog ")
-robot.tablet_service.showWebview()
+robot.speech_service.unsubscribe("Test_tts")
+robot.autonomous_life_service.setState("solitary")
 
-time.sleep(30)
+# robot.restart_robot()
 
-# Hide the web view
-robot.tablet_service.hideWebview()

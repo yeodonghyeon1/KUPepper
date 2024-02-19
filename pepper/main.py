@@ -130,6 +130,8 @@ class KUpepper:
     #2024-02-16T133625.109Z.explo(앞 부분만 찍은 explore() 맵)
         #2024-02-16T140640.347Z.explo
         #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
+        #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
+        #2014-04-04T030206.953Z.explo(세번째)
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
         self.event.set()

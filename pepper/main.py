@@ -143,6 +143,32 @@ class KUpepper:
         self.robot.first_localization()
         self.event.clear()
     
+
+    def move(self,x,y):
+        self.event2.set()
+        self.robot.navigate_to(x, y)
+        self.event2.clear()
+        print("end")
+
+    def session_reset(self):
+        self.robot.session.reset
+
+    #error
+    def sonar_getdata(self):
+        print("sonarleft" , self.robot.sonar_service.SonarLeftDetected())
+        print("sonarright" ,self.robot.sonar_service.SonarRightDetected())
+        print("sonarnothingleft", self.robot.sonar_service.SonarLeftNothingDetected())
+        print("sonarnothingright",self.robot.sonar_service.SonarRightNothingDetected())
+        pass
+
+    #no need
+    def security_data(self):
+        print("othogna:" ,self.robot.motion_service.getOrthogonalSecurityDistance())
+        print("tangential:" ,self.robot.motion_service.getTangentialSecurityDistance())
+        print("enable security: ", self.robot.motion_service.getExternalCollisionProtectionEnabled("All"))
+        # print("aa: ", self.robot.motion_service.isCollision())
+
+
     #기본 움직임
     def base_move(self):
         # print((round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)

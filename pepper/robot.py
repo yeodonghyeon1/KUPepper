@@ -135,9 +135,9 @@ class Pepper:
     def stop_video(self):
         self.tablet_service.stopVideo()
 
-    def set_czech_language(self):
-        self.dialog_service.setLanguage("English")
-        print("Czech language was set up")
+    def set_korean_language(self):
+        self.dialog_service.setLanguage("Korean")
+        print("korean language was set up")
 
     def set_english_language(self):
         self.dialog_service.setLanguage("English")
@@ -503,6 +503,7 @@ class Pepper:
         :rtype: cv2 image
         """
         self.say("Starting exploration in " + str(radius) + " meters")
+        self.user_session.getFocusedUser()
         self.navigation_service.explore(radius)
         map_file = self.navigation_service.saveExploration()
         
@@ -1090,7 +1091,7 @@ class Pepper:
             else:
                 self.say("I guess your mood is " + emotions[emotion_index])
 
-    def listen_to(self, vocabulary, language="Cz"):
+    def listen_to(self, vocabulary, language="En"):
         """
         Listen and match the vocabulary which is passed as parameter.
 

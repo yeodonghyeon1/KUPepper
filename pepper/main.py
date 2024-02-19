@@ -120,13 +120,11 @@ class KUpepper:
         self.robot.exploration_mode(1)
         self.event.clear()
 
-
     def move(self,x,y):
         self.event2.set()
         self.robot.navigate_to(x, y)
         self.event2.clear()
         print("end")
-
 
     def session_reset(self):
         self.robot.session.reset

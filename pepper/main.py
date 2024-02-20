@@ -130,6 +130,8 @@ class KUpepper:
     #2024-02-16T133625.109Z.explo(앞 부분만 찍은 explore() 맵)
         #2024-02-16T140640.347Z.explo
         #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
+        #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
+        #2014-04-04T030206.953Z.explo(세번째)
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
         self.event.set()
@@ -141,6 +143,32 @@ class KUpepper:
         self.robot.first_localization()
         self.event.clear()
     
+
+    def move(self,x,y):
+        self.event.set()
+        self.robot.navigate_to(x, y)
+        self.event.clear()
+        print("end")
+
+    def session_reset(self):
+        self.robot.session.reset
+
+    #error
+    def sonar_getdata(self):
+        print("sonarleft" , self.robot.sonar_service.SonarLeftDetected())
+        print("sonarright" ,self.robot.sonar_service.SonarRightDetected())
+        print("sonarnothingleft", self.robot.sonar_service.SonarLeftNothingDetected())
+        print("sonarnothingright",self.robot.sonar_service.SonarRightNothingDetected())
+        pass
+
+    #no need
+    def security_data(self):
+        print("othogna:" ,self.robot.motion_service.getOrthogonalSecurityDistance())
+        print("tangential:" ,self.robot.motion_service.getTangentialSecurityDistance())
+        print("enable security: ", self.robot.motion_service.getExternalCollisionProtectionEnabled("All"))
+        # print("aa: ", self.robot.motion_service.isCollision())
+
+
     #기본 움직임
     def base_move(self):
         # print((round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)

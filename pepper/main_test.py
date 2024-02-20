@@ -12,6 +12,9 @@
     # robot.dialog_service.runDialog() #application manifest에 있는 모든 토픽(collaborative로 마크된)을 검색하고 load하고 complie함
     # robot.dialog_service.loadTopicContent("pepper_test_enu.top") #load topic이랑 똑같이 작동함
     # robot.dialog_service.startPush() #dialog engine이 자동으로 proposal을 만들기 시작(Focuse기반)
+    # print(len(words)) #2
+    # print(type(words)) #list
+    # print(words[0])
 
 
 import qi
@@ -39,14 +42,10 @@ def wait_until_finished(robot):
             break
 
 def say_hi(robot):
-    #추가로 뭔가 더 세팅을 해줘야함 
     robot.autonomous_life_service.setState("interactive")
     robot.speech_service.subscribe("Test_tts")
     while True:
         words = robot.memory_service.getData("WordRecognized")
-        # print(len(words)) #2
-        # print(type(words)) #list
-        # print(words[0])
         print(words)
         print(robot.memory_service.getData("ALSpeechRecognition/Status"))
 
@@ -77,13 +76,23 @@ def test_dialog(robot):
                     "proposal: hello 2\n"
                     "u:(hi) hello human\n"
                     "u:(how's the weather today) It's sunny\n")
+    
+    topicContent1 = ("topic: ~mytopic1()\n"
+                     "language: enu\n"
+                     "dynamic: user_help\n"
+                     "proposal: This is KUPepper\n"
+                     "proposal: How to help you??\n"
+                     "u:(can you _~user_help) oh!, you need $1!.. wait for seconds. \n")
+
+    # robot.autonomous_life_service.setState("disabled")
     #추가로 에플리케이션 작동 상태로 변경해주고 동작하면 깔끔하게 비프음 들리는 state로 빠짐z
     robot.autonomous_life_service.setState("interactive")
     robot.autonomous_life_service.switchFocus("pepper_test-c675d3/behavior_1") #package-uuid/behavior-path
-    loaded_topic=robot.dialog_service.loadTopicContent(topicContent) #load topic content
+    loaded_topic=robot.dialog_service.loadTopicContent(topicContent1) #load topic content
     robot.dialog_service.activateTopic(loaded_topic) #activate topic
     robot.dialog_service.subscribe("my_dialog") #start dialog engine
-    robot.dialog_service.setFocus("mytopic") #set focus to the topic
+    robot.dialog_service.setConcept("user_help", "English",["help", "guide", "direction", "information"]) #set concept
+    # robot.dialog_service.setFocus("mytopic") #set focus to the topic
     robot.dialog_service.forceOutput() #force output
     robot.dialog_service.forceOutput() #force output
 
@@ -103,7 +112,6 @@ def check_life_state(robot):
     while True:
         print(robot.autonomous_life_service.getState())
         time.sleep(0.7)
-
 
 def test_dialog1(robot):
     topicContent1 = ("topic: ~mytopic()\n"

@@ -1,4 +1,4 @@
-topic: mytopic()
+topic: ~mytopic()
 language: enu
 u: (hi) hi~
 u: (hello) hello~

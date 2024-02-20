@@ -145,9 +145,9 @@ class KUpepper:
     
 
     def move(self,x,y):
-        self.event2.set()
+        self.event.set()
         self.robot.navigate_to(x, y)
-        self.event2.clear()
+        self.event.clear()
         print("end")
 
     def session_reset(self):

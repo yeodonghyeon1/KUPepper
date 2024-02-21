@@ -22,16 +22,22 @@ web_page = "http://192.168.0.107/"
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
-    print("one")
-    if request.method == 'POST':
-        app.test2 = True
-        # return redirect(url_for('test'))
     return render_template('main.html')
 
-@app.route('/test')
-def test():
-    app.test2 = True
-    return "test page"
+@app.route('/test1', methods=['GET', 'POST'])
+def test1():
+    if request.method == 'POST':
+        return "test page 1"
+    else:
+        return redirect(url_for('main'))
+
+@app.route('/test2', methods=['GET', 'POST'])
+def test2():
+    if request.method == 'POST':
+        return "test page 2"
+    else:
+        return redirect(url_for('main'))
+
 
 
 

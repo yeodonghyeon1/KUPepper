@@ -22,8 +22,9 @@ print('connected client addr:', addr)
 while True:
     data = client_soc.recv(100)
     msg = data.decode() 
-    print('recv msg:', msg)#받
-    client_soc.sendall(msg.encode(encoding='utf-8')) 
+    print('recv msg:', msg)
+    msg2 = input('msg:') 
+    client_soc.sendall(msg2.encode(encoding='utf-8')) 
     if msg == '/end':
         break
 

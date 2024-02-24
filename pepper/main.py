@@ -16,8 +16,8 @@ from flask import Flask, render_template, redirect, url_for, request
 
 
 app = Flask(__name__)
-web_host = "192.168.0.107"
-web_page = "http://192.168.0.107/"
+web_host = "192.168.112.1"
+web_page = "http://192.168.112.1/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -145,7 +145,6 @@ class KUpepper:
         # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
         # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
-
         self.robot.first_localization()
         self.event.clear()
     
@@ -187,34 +186,41 @@ class KUpepper:
 
     #GUI에 기능 적용
     def base_interface_robot(self):
+
         self.window.geometry("1200x600")
         self.window.title("pepper")
+        self.frame_1 = Tkinter.Frame(self.window)
+        self.frame_1.pack(side="top")
+        self.frame_2 = Tkinter.Frame(self.window)
+        self.frame_2.pack(side="top")
         self.exploration_pepper_button()
         self.navigation_pepper_button()
-        self.navigation_pepper_button2()
         self.webpage_reset_button()
         self.show_map_button()
         self.slam_start_button()
         self.slam_stop_button()
+
+
         #마지막에 있어야함
         self.window.mainloop()
-    
-    def exploration_mode_button_push(self):
-        self.event.set()
-        self.robot.exploration_mode(5)
-        self.event.clear()
 
-    def navigation_mode_button_push(self):
-        self.event.set()           
-        move_pepper = threading.Thread(target=self.move(0,2))
-        move_pepper.start()  
-        self.event.clear()
+    def exploration_mode_button_push(self, text):
+        try:
+            self.event.set()
+            result = text.get("1.0", "end")
+            self.robot.exploration_mode(int(result))
+        except: 
+            self.event.clear()
 
-    def navigation_mode_button_push2(self):
-        self.event.set()               
-        move_pepper = threading.Thread(target=self.move(0,0))
-        move_pepper.start()  
-        self.event.clear()
+    def navigation_mode_button_push(self,text,text2):
+        try:
+            self.event.set()
+            x = text.get("1.0", "end")
+            y = text.get("1.0", "end")
+            move_pepper = threading.Thread(target=self.move(int(x),int(y)))
+            move_pepper.start()
+        except: 
+            self.event.clear()
 
     def show_map_button_push(self):
         self.event.set()               
@@ -276,18 +282,24 @@ class KUpepper:
 
     #gui 기능(버튼 등) 설계
     def navigation_pepper_button(self):
-        button = Tkinter.Button(self.window, text="이동(2,0)", command=self.navigation_mode_button_push)
+        text = Tkinter.Text(self.frame_2, height =1, width= 5)
+        text2 = Tkinter.Text(self.frame_2, height =1, width= 3)
+        button = Tkinter.Button(self.frame_2, text="이동(x,y)", command=lambda: self.navigation_mode_button_push(text, text2))
+        text.pack()
+        text2.pack()
         button.pack()
+        button.grid(row=1, column=1)
+        text.grid(row=1, column=2)
+        text2.grid(row=1, column=3)
         self.window.bind("<")
-
-    def navigation_pepper_button2(self):
-        button = Tkinter.Button(self.window, text="이동(0,0)", command=self.navigation_mode_button_push2)
-        button.pack()
-        self.window.bind("<")
-
+        
     def exploration_pepper_button(self):
-        button = Tkinter.Button(self.window, text="맵핑 모드", command=self.exploration_mode_button_push)
+        text = Tkinter.Text(self.frame_1, height =1, width= 5)
+        button = Tkinter.Button(self.frame_1, text="맵핑 모드", command=lambda: self.exploration_mode_button_push(text))
         button.pack()
+        text.pack()
+        button.grid(row=1,column=1)
+        text.grid(row=1,column=2)
         self.window.bind("<")
 
     def webpage_reset_button(self):
@@ -323,7 +335,7 @@ if __name__ == "__main__":
     base_thread = threading.Thread(target=main)
     base_thread.daemon = True
     base_thread.start()
-    app.run(host=web_host, port=80, debug=False)
+    app.run(host=web_host, port=8080, debug=False)
 
     # main()
     

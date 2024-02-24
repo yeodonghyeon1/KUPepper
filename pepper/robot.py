@@ -570,14 +570,15 @@ class Pepper:
         print(-1 * (goal_y * resolution - offset_y))
 
         center_x = (self.localization_first[0] - offset_x) / resolution
-        center_y = (self.localization_first[1] - offset_x) / resolution
+        center_y = -1 * (self.localization_first[1] - offset_y) / resolution
         import math
         angle = self.localization_first[2]
         angle = math.degrees(angle)
         center = (center_x , center_y)
         M = cv2.getRotationMatrix2D(center, angle, 1)
         rotated = cv2.warpAffine(img, M, (map_width, map_height))
-        img = rotated
+        # img = rotated
+
         
         
         

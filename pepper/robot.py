@@ -570,7 +570,7 @@ class Pepper:
         print(-1 * (goal_y * resolution - offset_y))
 
         center_x = (self.localization_first[0] - offset_x) / resolution
-        center_y = -1 * (self.localization_first[1] - offset_y) / resolution
+        center_y = -1 *(self.localization_first[1] - offset_y) / resolution
         import math
         angle = self.localization_first[2]
         angle = math.degrees(angle)
@@ -674,6 +674,8 @@ class Pepper:
             localization = self.navigation_service.getRobotPositionInMap()
             # exploration_path = self.navigation_service.getExplorationPath()
             self.localization_first = localization[0]
+            self.localization_first2 = localization[1]
+
             print("localization", self.localization_first)
 
             print("[INFO]: Localization complete")
@@ -701,6 +703,8 @@ class Pepper:
             localization = self.navigation_service.getRobotPositionInMap()
             # exploration_path = self.navigation_service.getExplorationPath()
             self.localization = localization[0]
+            self.localization2 = localization[1]
+
             print("localization", self.localization)
             print("[INFO]: Localization complete")
 

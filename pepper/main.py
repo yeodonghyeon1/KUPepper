@@ -147,13 +147,6 @@ class KUpepper:
         self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
         self.robot.first_localization()
         self.event.clear()
-    
-
-    def move(self,x,y):
-        self.event.set()
-        self.robot.navigate_to(x, y)
-        self.event.clear()
-        print("end")
 
     def session_reset(self):
         self.robot.session.reset
@@ -187,7 +180,7 @@ class KUpepper:
     #GUI에 기능 적용
     def base_interface_robot(self):
 
-        self.window.geometry("1200x600")
+        self.window.geometry("400x200")
         self.window.title("pepper")
         self.frame_1 = Tkinter.Frame(self.window)
         self.frame_1.pack(side="top")
@@ -210,17 +203,19 @@ class KUpepper:
             result = text.get("1.0", "end")
             self.robot.exploration_mode(int(result))
         except: 
-            self.event.clear()
+            pass
+        self.event.clear()
 
     def navigation_mode_button_push(self,text,text2):
-        try:
-            self.event.set()
-            x = text.get("1.0", "end")
-            y = text.get("1.0", "end")
-            move_pepper = threading.Thread(target=self.move(int(x),int(y)))
-            move_pepper.start()
-        except: 
-            self.event.clear()
+
+        self.event.set()
+        x = text.get("1.0", "end")
+        y = text.get("1.0", "end")
+        move_pepper = threading.Thread(target=self.move(int(x),int(y)))
+        move_pepper.start()
+
+        self.event.clear()
+
 
     def show_map_button_push(self):
         self.event.set()               
@@ -251,8 +246,8 @@ class KUpepper:
             pos = self.robot.pos[0]
             goal_x = (pos[0] - self.robot.offset_x) / self.robot.resolution
             goal_y = -1 * ((pos[1] - self.robot.offset_y) / self.robot.resolution)
-            self.show_map_button_push()
             self.robot.robot_map = cv2.circle(self.robot.robot_map, (int(goal_x), int(goal_y)), 3, (255, 0, 0), -1)
+            self.show_map_button_push()
 
     def web_page_reset(self):
         self.event.set()
@@ -262,8 +257,21 @@ class KUpepper:
         self.event.clear()
 
     def move(self,x,y):
-        self.event.set()
-        self.robot.navigate_to(x, y)
+        try:
+            self.event.set()
+            self.robot.navigate_to(x, y)
+            map_x = (x * self.robot.resolution)
+            map_y = -1 * (y * self.robot.resolution)
+            # map_x = x
+            # map_y = y
+            print("mouse click:", map_x, map_y)
+            pos = self.robot.pos[0]
+            goal_x = (pos[0] - self.robot.offset_x) / self.robot.resolution
+            goal_y = -1 * ((pos[1] - self.robot.offset_y) / self.robot.resolution)
+            self.robot.robot_map = cv2.circle(self.robot.robot_map, (int(goal_x), int(goal_y)), 3, (255, 0, 0), -1)
+            self.show_map_button_push()
+        except:
+            print("open the map first")
         self.event.clear()
 
     def slam_start_button_push(self):

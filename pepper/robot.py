@@ -554,11 +554,11 @@ class Pepper:
         #현재 localize된 pepper 좌표
         x = self.localization[0]
         y = self.localization[1]
-        print("resolution:", resolution)
-        print("offset_x:", offset_x)
-        print("offset_y:", offset_y)
-        print("x:",x)
-        print("y:",y)
+        # print("resolution:", resolution)
+        # print("offset_x:", offset_x)
+        # print("offset_y:", offset_y)
+        # print("x:",x)
+        # print("y:",y)
 
         #지도 상 좌표
         goal_x = (x - offset_x) / resolution
@@ -566,18 +566,19 @@ class Pepper:
         print("goal_x:",goal_x)
         print("goal_y:",goal_y)
 
-        print(goal_x * resolution + offset_x)
-        print(-1 * (goal_y * resolution - offset_y))
+        # print(goal_x * resolution + offset_x)
+        # print(-1 * (goal_y * resolution - offset_y))
 
         center_x = (self.localization_first[0] - offset_x) / resolution
         center_y = -1 *(self.localization_first[1] - offset_y) / resolution
         import math
-        angle = self.localization_first[2]
+        angle = self.localization2[2]
         angle = math.degrees(angle)
-        center = (center_x , center_y)
-        M = cv2.getRotationMatrix2D(center, angle, 1)
+        center = (goal_x , goal_y)
+        M = cv2.getRotationMatrix2D(center, 45, 1)
         rotated = cv2.warpAffine(img, M, (map_width, map_height))
-        # img = rotated
+        img = rotated
+
 
         
         

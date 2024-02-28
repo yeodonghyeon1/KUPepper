@@ -9,6 +9,7 @@ import sys
 import time
 import cv2
 from flask import Flask, render_template, redirect, url_for, request
+import speech_recognition as sr
 
 ############################################################################################
 
@@ -16,33 +17,35 @@ from flask import Flask, render_template, redirect, url_for, request
 
 
 app = Flask(__name__)
-web_host = "192.168.112.1"
-web_page = "http://192.168.112.1/"
+web_host = "192.168.0.107"
+web_page = "http://192.168.0.107:8080"
 
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
     return render_template('main.html')
-
+    
 @app.route('/test1', methods=['GET', 'POST'])
 def test1():
     if request.method == 'POST':
-        return "test page 1"
-    else:
-        return redirect(url_for('main'))
+        # return "test page 1"
+        app.test2 = 1    
+    return redirect(url_for('main_page'))
 
+    
 @app.route('/test2', methods=['GET', 'POST'])
 def test2():
     if request.method == 'POST':
-        return "test page 2"
-    else:
-        return redirect(url_for('main'))
+        # return "test page 2"
+        app.test2 = 2
+    return redirect(url_for('main_page'))
+
 
 
 
 
 #플라스크 변수: 전역변수랑 같음(웹 이벤트 작동 시 사용)
-app.test2 = False
+app.test2 = 0
 
 ############################################################################################
 
@@ -65,7 +68,6 @@ class KUpepper:
         #GUI
         self.window = Tkinter.Tk()
         self.base_interface_robot()
-
         self.result_map= 0 
         self.resolution=0 
         self.offset_x =0 
@@ -104,15 +106,21 @@ class KUpepper:
     def interaction(self):
         #머리 터치 시 상호작용
         if self.robot.memory_service.getData("Device/SubDeviceList/Head/Touch/Front/Sensor/Value"):
-            self.robot.say("Get your hands off my head loser")
+            self.robot.say("무슨 일이신가요?")
     
     #웹 상호작용
     def web_interaction(self):
         #이동 상호작용
-        if app.test2 == True:
-            self.navigation_mode_button_push2()
-            app.test2 = False
+        # print("interaction number: ", app.test2)
+        if app.test2 == 1:
+            app.test2 = 0
 
+            self.navigation_mode_button_web()
+        elif app.test2 == 2:
+            app.test2 = 0
+            self.talk_pepper()
+
+            
     #기본 루프
     def baseline(self):
         while_count = 0
@@ -138,18 +146,34 @@ class KUpepper:
         #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
         #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
         #2014-04-04T030206.953Z.explo(세번째)
+        #2024-02-27T084209.829Z.explo 방향 확인 하기 위한 임시 =
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
         self.event.set()
         self.robot.stop_localization()
         # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
         # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
-        self.robot.load_map(file_name="2024-02-14T082317.984Z.explo")
+        self.robot.load_map(file_name="2024-02-27T084209.829Z.explo")
         self.robot.first_localization()
         self.event.clear()
 
     def session_reset(self):
         self.robot.session.reset
+
+    def talk_pepper(self):
+        self.event.set()
+        try:
+            self.robot.recordSound()
+            self.robot.download_file("speech.wav")
+            r = sr.Recognizer()
+            kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+            with kr_audio as source:
+                audio = r.record(source)
+            print(r.recognize_google(audio, language='ko-KR'))
+            self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
+        except:
+            self.robot.say("못 알아 들음")
+        self.event.clear()
 
     #error
     def sonar_getdata(self):
@@ -206,8 +230,13 @@ class KUpepper:
             pass
         self.event.clear()
 
+    def navigation_mode_button_web(self):
+        self.event.set()
+        move_pepper = threading.Thread(target=self.move(0, 0))
+        self.event.clear()
+        
     def navigation_mode_button_push(self,text,text2):
-
+        
         self.event.set()
         x = text.get("1.0", "end")
         y = text.get("1.0", "end")
@@ -286,7 +315,7 @@ class KUpepper:
 
     def session_reset(self):
         self.robot.session.reset
-
+ 
 
     #gui 기능(버튼 등) 설계
     def navigation_pepper_button(self):

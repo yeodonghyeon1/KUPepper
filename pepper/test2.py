@@ -4,11 +4,21 @@ import callbacks
 import numpy as np
 import time
 import sys
+import speech_recognition as sr
 import os
 PepperIP = "192.168.0.125"
 robot = Pepper(PepperIP,9559)
 a = HumanGreeter(robot.app)
 robot.say("HI HIHIHIHIHIHIHI")
+
+robot.recordSound()
+robot.download_file("speech.wav")
+r = sr.Recognizer()
+kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+with kr_audio as source:
+    audio = r.record(source)
+print(r.recognize_google(audio, language='ko-KR'))
+robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
 # robot.chatbot()
 # a.track_human(5)
 # print("----------------")

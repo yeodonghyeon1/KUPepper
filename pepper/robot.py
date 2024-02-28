@@ -1441,7 +1441,7 @@ class Pepper:
             :param text: Text to speech
             :type text: string
             """
-            import gtts
+            import gtts#구글로 tts -> 한국어 가능
             tts = gtts.gTTS(text, lang="en")
             tts.save("./tmp_speech.mp3")
             playsound.playsound("./tmp_speech.mp3")

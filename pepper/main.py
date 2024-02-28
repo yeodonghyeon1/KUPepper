@@ -9,6 +9,8 @@ import sys
 import time
 import cv2
 from flask import Flask, render_template, redirect, url_for, request
+import socket
+import speech_recognition as sr
 
 ############################################################################################
 
@@ -335,14 +337,59 @@ class KUpepper:
         # 버튼 위치 설정
         # button.place(x=180, y=200)
 
+def socket_Server(self):
+        host = 'localhost' 
+        port = 3333 
+
+# 서버소켓 오픈/ netstat -a로 포트 확인
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind((host, port))
+
+# 클라이언트 접속 준비 완료
+        server_socket.listen()
+
+        print('echo server start')
+
+#  클라이언트 접속 기다리며 대기 
+        client_soc, addr = server_socket.accept()
+
+        print('connected client addr:', addr)
+
+        r = sr.Recognizer()
+        kr_audio = sr.AudioFile('C:/KUPepper/pepper/tmp_files/pepper_test.wav')#파일 경로
+
+        with kr_audio as source:
+          audio = r.record(source)
+
+# 클라이언트가 보낸 패킷 계속 받아 에코메세지 돌려줌
+        while True:
+            msg2 = r.recognize_google(audio, language='ko-KR')
+            print(r.recognize_google(audio, language='ko-KR'))
+            client_soc.sendall(msg2.encode(encoding='utf-8')) 
+            data = client_soc.recv(1000)#메시지 받는 부분
+            msg = data.decode()
+            print('recv msg:', msg)
+            msg=input('/end입력시 종료 :')
+            if msg == '/end':
+                break
+
+time.sleep(5)
+print('서버 종료')
+socket_Server.close()
+
+
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
+    socket_Server()
+        
     
 
 if __name__ == "__main__":
     base_thread = threading.Thread(target=main)
     base_thread.daemon = True
     base_thread.start()
+
     app.run(host=web_host, port=8080, debug=False)
 
     # main()

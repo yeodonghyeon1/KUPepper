@@ -1,5 +1,4 @@
 import socket, time
-import speech_recognition as sr
 
 host = 'localhost' 
 port = 3333 
@@ -19,21 +18,13 @@ client_soc, addr = server_socket.accept()
 
 print('connected client addr:', addr)
 
-r = sr.Recognizer()
-kr_audio = sr.AudioFile('C:/KUPepper/pepper/tmp_files/pepper_test.wav')#파일 경로
-
-with kr_audio as source:
-    audio = r.record(source)
-
 # 클라이언트가 보낸 패킷 계속 받아 에코메세지 돌려줌
 while True:
-    msg2 = r.recognize_google(audio, language='ko-KR')
-    print(r.recognize_google(audio, language='ko-KR'))
+    msg2 = input('msg:') 
     client_soc.sendall(msg2.encode(encoding='utf-8')) 
     data = client_soc.recv(1000)#메시지 받는 부분
-    msg = data.decode()
+    msg = data.decode() 
     print('recv msg:', msg)
-    msg=input('/end입력시 종료 :')
     if msg == '/end':
         break
 

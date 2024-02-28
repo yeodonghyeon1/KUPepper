@@ -62,6 +62,8 @@ class KUpepper:
 
         #베이스 라인 코드
         self.event = threading.Event()
+        socket_thread = threading.Thread(target=self.socket_Server_connect)
+        socket_thread.start()
         self.base_thread = threading.Thread(target=self.baseline)
         self.base_thread.daemon = True
         self.base_thread.start()
@@ -99,7 +101,7 @@ class KUpepper:
     #기본 파라미터 구성
     def base_parameter(self):
         self.robot.set_security_distance(distance=0.2)
-        self.load_map_and_localization()
+        # self.load_map_and_localization()
 
         # print(self.robot.navigation_service.getMetricalMap())
 
@@ -163,17 +165,17 @@ class KUpepper:
 
     def talk_pepper(self):
         self.event.set()
-        try:
-            self.robot.recordSound()
-            self.robot.download_file("speech.wav")
-            r = sr.Recognizer()
-            kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
-            with kr_audio as source:
-                audio = r.record(source)
-            print(r.recognize_google(audio, language='ko-KR'))
-            self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
-        except:
-            self.robot.say("못 알아 들음")
+        self.robot.recordSound()
+        self.robot.download_file("speech.wav")
+        r = sr.Recognizer()
+        kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+        with kr_audio as source:
+            audio = r.record(source)
+        # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
+        msg2 = r.recognize_google(audio, language='ko-KR')
+        self.client_soc.sendall(msg2.encode(encoding='utf-8'))
+        data = self.client_soc.recv(1000)#메시지 받는 부분
+        self.robot.say(data)
         self.event.clear()
 
     #error
@@ -365,51 +367,32 @@ class KUpepper:
         # 버튼 위치 설정
         # button.place(x=180, y=200)
 
-def socket_Server(self):
-        host = 'localhost' 
-        port = 3333 
+    def socket_Server_connect(self):
+            host = web_host
+            port = 3333
 
-# 서버소켓 오픈/ netstat -a로 포트 확인
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_socket.bind((host, port))
+    # 서버소켓 오픈/ netstat -a로 포트 확인
+            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server_socket.bind((host, port))
 
-# 클라이언트 접속 준비 완료
-        server_socket.listen()
+    # 클라이언트 접속 준비 완료
+            server_socket.listen(1)
 
-        print('echo server start')
+            print('echo server start')
 
-#  클라이언트 접속 기다리며 대기 
-        client_soc, addr = server_socket.accept()
+    #  클라이언트 접속 기다리며 대기 
+            self.client_soc, addr = server_socket.accept()
+            print('connected client addr:', addr)
 
-        print('connected client addr:', addr)
-
-        r = sr.Recognizer()
-        kr_audio = sr.AudioFile('C:/KUPepper/pepper/tmp_files/pepper_test.wav')#파일 경로
-
-        with kr_audio as source:
-          audio = r.record(source)
-
-# 클라이언트가 보낸 패킷 계속 받아 에코메세지 돌려줌
-        while True:
-            msg2 = r.recognize_google(audio, language='ko-KR')
-            print(r.recognize_google(audio, language='ko-KR'))
-            client_soc.sendall(msg2.encode(encoding='utf-8')) 
-            data = client_soc.recv(1000)#메시지 받는 부분
-            msg = data.decode()
-            print('recv msg:', msg)
-            msg=input('/end입력시 종료 :')
-            if msg == '/end':
-                break
-
-time.sleep(5)
-print('서버 종료.')
-socket_Server.close()
+            time.sleep(99999999)
+            print('서버 종료.')
+            # socket_Server_connect.close()
 
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
-    socket_Server()
+    
         
     
 

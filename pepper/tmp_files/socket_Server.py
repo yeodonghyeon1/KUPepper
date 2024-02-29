@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import socket, time
 import speech_recognition as sr
 
@@ -10,7 +13,7 @@ server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_socket.bind((host, port))
 
 # 클라이언트 접속 준비 완료
-server_socket.listen()
+server_socket.listen(1)
 
 print('echo server start')
 

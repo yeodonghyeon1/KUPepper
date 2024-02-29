@@ -401,16 +401,15 @@ def socket_Server(self):
             msg=input('/end입력시 종료 :')
             if msg == '/end':
                 break
-
-time.sleep(5)
-print('서버 종료.')
-socket_Server.close()
+        time.sleep(5)
+        print('서버 종료')
+        socket_Server.close()
 
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
     socket_Server()
-        
+    
     
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ import speech_recognition as sr
 
 app = Flask(__name__)
 web_host = "192.168.0.107"
-web_page = "http://192.168.0.107:8080"
+web_page = "http://192.168.0.107:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])

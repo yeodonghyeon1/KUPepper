@@ -150,6 +150,7 @@ class KUpepper:
         #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
         #2014-04-04T030206.953Z.explo(세번째)
         #2024-02-27T084209.829Z.explo 방향 확인 하기 위한 임시 =
+
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
         self.event.set()
@@ -385,7 +386,7 @@ class KUpepper:
             self.client_soc, addr = server_socket.accept()
             print('connected client addr:', addr)
 
-            time.sleep(99999999)
+            time.sleep(999999)
             print('서버 종료.')
             # socket_Server_connect.close()
 

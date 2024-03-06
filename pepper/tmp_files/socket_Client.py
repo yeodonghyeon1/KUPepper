@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # 클라이언트
 import socket, threading
 import openai

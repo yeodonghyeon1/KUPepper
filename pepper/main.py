@@ -11,6 +11,7 @@ import cv2
 from flask import Flask, render_template, redirect, url_for, request
 import socket
 import speech_recognition as sr
+import numpy as np
 
 ############################################################################################
 
@@ -24,31 +25,32 @@ web_page = "http://192.168.0.107:8080/"
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
-    return render_template('main.html')
-    
+    return render_template('start.html')
+
 @app.route('/start', methods=['GET', 'POST'])
-def test1():
+def start():
     if request.method == 'POST':
+        app.start = True
         return render_template('main.html')
-        # return "test page 1"
-        app.test2 = 1    
     return redirect(url_for('main_page'))
 
+@app.route('/test1', methods=['GET', 'POST'])
+def test1():
+    if request.method == 'POST':
+        app.test2 = 1  
+    pass
     
 @app.route('/test2', methods=['GET', 'POST'])
 def test2():
     if request.method == 'POST':
-        # return "test page 2"
         app.test2 = 2
-    return redirect(url_for('main_page'))
-
-
+    pass
 
 
 
 #플라스크 변수: 전역변수랑 같음(웹 이벤트 작동 시 사용)
 app.test2 = 0
-
+app.start = False
 ############################################################################################
 
 
@@ -59,7 +61,7 @@ class KUpepper:
         self.ip = ip
         self.port = port
         self.robot = Pepper(self.ip, self.port)
-        self.robot.say("HI Pepper")
+        self.robot.say("연결되었습니다.")
 
         #베이스 라인 코드
         self.event = threading.Event()
@@ -118,7 +120,6 @@ class KUpepper:
         # print("interaction number: ", app.test2)
         if app.test2 == 1:
             app.test2 = 0
-
             self.navigation_mode_button_web()
         elif app.test2 == 2:
             app.test2 = 0
@@ -131,17 +132,26 @@ class KUpepper:
         self.base_parameter()
         try:
             while True:
-                self.stopThreadUntilOneTheEnd()
-                # self.status_print()
-                # self.base_move()
-                self.web_interaction()
-                self.interaction()
-                time.sleep(0.1)
-                while_count += 1
+                if app.start == True:
+                    if while_count == 0:
+                        self.robot.say("반갑습니다. 페퍼를 동작합니다")
+                        self.robot.start_animation(np.random.choice(["Hey_1", "Hey_3", "Hey_4", "Hey_6"]))
+                    self.stopThreadUntilOneTheEnd()
+                    # self.status_print()
+                    # self.base_move()
+                    self.web_interaction()
+                    self.interaction()
+                    time.sleep(0.1)
+                    while_count += 1
+                else:
+                    print("wait...")
+                    time.sleep(1)
         except KeyboardInterrupt:
             #stop
+            self.robot.say("연결을 중지합니다")
             sys.exit(0)
         print("exit")
+
 
     #맵 종류
     #2024-02-14T082317.984Z.explo(8층 pbl실 기본 explore() 맵)
@@ -167,17 +177,20 @@ class KUpepper:
 
     def talk_pepper(self):
         self.event.set()
-        self.robot.recordSound()
-        self.robot.download_file("speech.wav")
-        r = sr.Recognizer()
-        kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
-        with kr_audio as source:
-            audio = r.record(source)
-        # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
-        msg2 = r.recognize_google(audio, language='ko-KR')
-        self.client_soc.sendall(msg2.encode(encoding='utf-8'))
-        data = self.client_soc.recv(1000)#메시지 받는 부분
-        self.robot.say(data)
+        try: 
+            self.robot.recordSound()
+            self.robot.download_file("speech.wav")
+            r = sr.Recognizer()
+            kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+            with kr_audio as source:
+                audio = r.record(source)
+            # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
+            msg2 = r.recognize_google(audio, language='ko-KR')
+            self.client_soc.sendall(msg2.encode(encoding='utf-8'))
+            data = self.client_soc.recv(1000)#메시지 받는 부분
+            self.robot.say(data)
+        except:
+            print("Maybe Pepper didn't hear anything")
         self.event.clear()
 
     #error
@@ -208,7 +221,6 @@ class KUpepper:
 
     #GUI에 기능 적용
     def base_interface_robot(self):
-
         self.window.geometry("400x200")
         self.window.title("pepper")
         self.frame_1 = Tkinter.Frame(self.window)
@@ -327,9 +339,6 @@ class KUpepper:
         text = Tkinter.Text(self.frame_2, height =1, width= 5)
         text2 = Tkinter.Text(self.frame_2, height =1, width= 3)
         button = Tkinter.Button(self.frame_2, text="이동(x,y)", command=lambda: self.navigation_mode_button_push(text, text2))
-        text.pack()
-        text2.pack()
-        button.pack()
         button.grid(row=1, column=1)
         text.grid(row=1, column=2)
         text2.grid(row=1, column=3)
@@ -338,8 +347,6 @@ class KUpepper:
     def exploration_pepper_button(self):
         text = Tkinter.Text(self.frame_1, height =1, width= 5)
         button = Tkinter.Button(self.frame_1, text="맵핑 모드", command=lambda: self.exploration_mode_button_push(text))
-        button.pack()
-        text.pack()
         button.grid(row=1,column=1)
         text.grid(row=1,column=2)
         self.window.bind("<")
@@ -360,7 +367,7 @@ class KUpepper:
         self.window.bind("<")
 
     def slam_stop_button(self):
-        button = Tkinter.Button(self.window, text="수동 맵핑 금지", command=self.slam_stop_button_push)
+        button = Tkinter.Button(self.window, text="수동 맵핑 중지", command=self.slam_stop_button_push)
         button.pack()
         self.window.bind("<")
         # label = Tkinter.Label(self.window, text="안녕하세요!")
@@ -387,7 +394,8 @@ class KUpepper:
             self.client_soc, addr = server_socket.accept()
             print('connected client addr:', addr)
 
-            time.sleep(999999)
+            while True:
+                time.sleep(999999)
             print('서버 종료.')
             # socket_Server_connect.close()
 

@@ -114,9 +114,13 @@ body {
   <p class="pepper-zVM">Pepper</p>
   <p class="ai--ZRy">ai 산업 머시깽이</p>
   <!-- <div class="auto-group-xars-EHD">탭하여 시작하기</div> -->
-  <button class="auto-group-xars-EHD">탭하여 시작하기</button>
+  <from action="/start" method="POST">
+    <button class="auto-group-xars-EHD">탭하여 시작하기</button>
+  </from>
   <div class="auto-group-hsr5-9BD">
-    <img class="logo01jpg-1-gS3" src="logo01jpg-1.png"/>
+    <!-- <img class="logo01jpg-1-gS3" src="logo01jpg-1.png"/> -->
+    <img class="logo01jpg-1-gS3" src="{{url_for('static', filename='IMG/logo01jpg.png') }}">
+
     <p class="kyungnam-univ-bZ1">Kyungnam Univ</p>
   </div>
 </div>

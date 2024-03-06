@@ -19,8 +19,8 @@ import numpy as np
 
 
 app = Flask(__name__)
-web_host = "192.168.0.43"
-web_page = "http://192.168.0.43:8080/"
+web_host = "192.168.0.107"
+web_page = "http://192.168.0.107:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -123,7 +123,7 @@ class KUpepper:
             self.navigation_mode_button_web()
         elif app.test2 == 2:
             app.test2 = 0
-            # self.talk_pepper()
+            self.talk_pepper_web()
      
     #기본 루프
     def baseline(self):

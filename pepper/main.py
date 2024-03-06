@@ -26,9 +26,10 @@ web_page = "http://192.168.0.43:8080/"
 def main_page():
     return render_template('main.html')
     
-@app.route('/test1', methods=['GET', 'POST'])
+@app.route('/start', methods=['GET', 'POST'])
 def test1():
     if request.method == 'POST':
+        return render_template('main.html')
         # return "test page 1"
         app.test2 = 1    
     return redirect(url_for('main_page'))

@@ -18,8 +18,8 @@ import speech_recognition as sr
 
 
 app = Flask(__name__)
-web_host = "192.168.0.107"
-web_page = "http://192.168.0.107:8080/"
+web_host = "192.168.0.43"
+web_page = "http://192.168.0.43:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -121,22 +121,35 @@ class KUpepper:
             self.navigation_mode_button_web()
         elif app.test2 == 2:
             app.test2 = 0
-            self.talk_pepper()
-
-            
+            # self.talk_pepper()
+     
     #기본 루프
     def baseline(self):
         while_count = 0
         self.base_parameter()
+        topicContent2 = ("topic: ~mytopic2()\n"
+                            "language: enu\n"
+                            "proposal: This is KUPepper, How to help you??\n")
+        self.robot.autonomous_life_service.setState("interactive")
+        self.robot.autonomous_life_service.switchFocus("pepper_test-c675d3/behavior_1") #package-uuid/behavior-path
+        loaded_topic=self.robot.dialog_service.loadTopicContent(topicContent2) #load topic content
+        self.robot.dialog_service.activateTopic(loaded_topic) #activate topic
+        self.robot.dialog_service.subscribe("my_dialog") #start dialog engine
         try:
             while True:
                 self.stopThreadUntilOneTheEnd()
+                print(self.robot.memory_service.getData("ALSpeechRecognition/Status"))
+                if self.robot.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
+                    self.talk_pepper()
+
                 # self.status_print()
                 # self.base_move()
                 self.web_interaction()
                 self.interaction()
                 time.sleep(0.1)
                 while_count += 1
+
+
         except KeyboardInterrupt:
             #stop
             sys.exit(0)
@@ -164,20 +177,41 @@ class KUpepper:
     def session_reset(self):
         self.robot.session.reset
 
+    #gpt
     def talk_pepper(self):
         self.event.set()
-        self.robot.recordSound()
+        try:
+            self.robot.audio_recorder.stopMicrophonesRecording()
+        except:
+            pass
+
+        while True:
+            if self.robot.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
+                self.robot.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+                self.robot.blink_eyes([255, 255, 0])
+                break
+        while True:
+            if self.robot.memory_service.getData("ALSpeechRecognition/Status") == "EndOfProcess":
+                self.robot.audio_recorder.stopMicrophonesRecording()
+                self.robot.blink_eyes([0, 0, 0])
+                break
+        self.robot.audio_service.playFile("/home/nao/speech.wav") #mp3파일 재생
+
         self.robot.download_file("speech.wav")
         r = sr.Recognizer()
-        kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+        kr_audio = sr.AudioFile("tmp_files/speech.wav")
         with kr_audio as source:
             audio = r.record(source)
         # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
         msg2 = r.recognize_google(audio, language='ko-KR')
+        print("메시지 전달!!!!~~~")
         self.client_soc.sendall(msg2.encode(encoding='utf-8'))
         data = self.client_soc.recv(1000)#메시지 받는 부분
+        self.robot.dialog_service.setLanguage("Korean")
         self.robot.say(data)
         self.event.clear()
+
+
 
     #error
     def sonar_getdata(self):
@@ -329,9 +363,9 @@ class KUpepper:
         text.pack()
         text2.pack()
         button.pack()
-        button.grid(row=1, column=1)
-        text.grid(row=1, column=2)
-        text2.grid(row=1, column=3)
+        # button.grid(row=1, column=1)
+        # text.grid(row=1, column=2)
+        # text2.grid(row=1, column=3)
         self.window.bind("<")
         
     def exploration_pepper_button(self):
@@ -339,8 +373,8 @@ class KUpepper:
         button = Tkinter.Button(self.frame_1, text="맵핑 모드", command=lambda: self.exploration_mode_button_push(text))
         button.pack()
         text.pack()
-        button.grid(row=1,column=1)
-        text.grid(row=1,column=2)
+        # button.grid(row=1,column=1)
+        # text.grid(row=1,column=2)
         self.window.bind("<")
 
     def webpage_reset_button(self):

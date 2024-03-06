@@ -12,6 +12,11 @@ robot = Pepper("192.168.0.125", 9559)
 # robot.dialog_service.deactivateTopic()
 # robot.dialog_service.unloadTopic()
 
+# robot.set_english_language()
+# robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
+# robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
+
+
 robot.restart_robot()
 
 

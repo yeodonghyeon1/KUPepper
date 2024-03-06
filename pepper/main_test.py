@@ -50,11 +50,12 @@ def wait_until_finished(robot):
 
 def say_hi(robot):
     robot.autonomous_life_service.setState("interactive")
+    robot.autonomous_life_service.switchFocus("web_site-9108dc/behavior_1") #package-uuid/behavior-path
     robot.speech_service.subscribe("Test_tts")
     while True:
         words = robot.memory_service.getData("WordRecognized")
         print(words)
-        print(robot.memory_service.getData("ALSpeechRecognition/Status"))
+        # print(robot.memory_service.getData("ALSpeechRecognition/Status"))
 
         # if robot.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
         if words[1]>=0.40:
@@ -71,7 +72,6 @@ def say_hi(robot):
                 robot.say("I can guide some places for you")
                 time.sleep(1.3)
 
-
 def set_topic_enu():
     topicContent1 = ("topic: ~mytopic1()\n"
                      "language: enu\n"
@@ -87,7 +87,7 @@ def set_topic_enu():
     robot.dialog_service.setLanguage("English") #set language 로봇에서 설정을 한국어로 하면 아무리 코드상에서 set해줄려고해도 못참음(system 상 language가 한국어로 설정되어있어서)
     robot.autonomous_life_service.setState("interactive")
     robot.autonomous_life_service.switchFocus("pepper_test-c675d3/behavior_1") #package-uuid/behavior-path
-    loaded_topic=robot.dialog_service.loadTopicContent(topicContent2) #load topic content
+    loaded_topic=robot.dialog_service.loadTopicContent(topicContent1) #load topic content
     robot.dialog_service.activateTopic(loaded_topic) #activate topic
     robot.dialog_service.subscribe("my_dialog") #start dialog engine
     robot.dialog_service.setFocus("mytopic2") #set focus to the topic
@@ -105,7 +105,7 @@ def set_topic_kok():
                     "u:(안녕  _~somting) 맞아!, 나는 $1!, 만나서 반가워.\n"
                     "u:(이름이 뭐야?) 나는 페퍼야\n")
     
-    topicContent4 = ("topic: ~topic4()\n"
+    topicContent4 = ("topic: ~topic1()\n"
                      "language: kok\n"
                      "proposal: 안녕?\n")
     
@@ -115,10 +115,9 @@ def set_topic_kok():
     loaded_topic=robot.dialog_service.loadTopicContent(topicContent4) #load topic content
     robot.dialog_service.activateTopic(loaded_topic) #activate topic
     robot.dialog_service.subscribe("my_dialog") #start dialog engine
-    robot.dialog_service.setFocus("topic4") #set focus to the topic
+    robot.dialog_service.setFocus("topic1") #set focus to the topic
     robot.dialog_service.setConfidenceThreshold(loaded_topic,0.05) #set confidence threshold
     return loaded_topic
-
 
 def set_topic_jpj():
     topicContent5 = ("topic: ~topic5()\n"
@@ -224,6 +223,8 @@ def test_dialog1(robot):
 if __name__ == "__main__":
     robot = Pepper("192.168.0.125", "9559")
     test_dialog(robot)
+    # set_vocabulary(robot)
+    # say_hi(robot)
 
 
 

@@ -81,12 +81,10 @@ class Pepper:
         self.app = qi.Application(["ReactToTouch","HumanGreeter", "--qi-url=" + connection_url])
         self.human_reco = HumanGreeter(self.app)
 
-
         #수정
         self.user_session = self.session.service("ALUserSession")
         self.sonar_service = self.session.service("ALLocalization")
         self.sound_detect_service = self.session.service("ALSoundDetection")
- 
         self.detect_service = self.session.service("ALVisualCompass")
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")

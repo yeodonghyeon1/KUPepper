@@ -109,6 +109,7 @@ class Pepper:
         self.speech_service = self.session.service("ALSpeechRecognition")
         self.dialog_service = self.session.service("ALDialog")
         self.audio_recorder = self.session.service("ALAudioRecorder")
+        self.text_to_speech = self.session.service("ALTextToSpeech")
 
     
         self.slam_map = None

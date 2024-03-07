@@ -14,7 +14,6 @@ robot = Pepper("192.168.0.125", 9559)
 
 # robot.set_english_language()
 # robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
-# robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
 
 
 robot.restart_robot()

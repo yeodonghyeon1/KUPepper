@@ -238,10 +238,10 @@ class KUpepper:
             self.client_soc.sendall(msg2.encode(encoding='utf-8'))
             data = self.client_soc.recv(1000)#메시지 받는 부분
             self.robot.say(data)
-            self.talk_pepper()#또다시 인식
+            # self.talk_pepper()#또다시 인식
         except:
             self.robot.say("죄송합니다. 다시 말해주시겠습니까?") #인식못했을때
-            self.talk_pepper()# 다시 인식
+            # self.talk_pepper()# 다시 인식
         finally:
             self.event.clear()
             time.sleep(0.1)

@@ -38,13 +38,15 @@ def start():
 def test1():
     if request.method == 'POST':
         app.test2 = 1  
-    pass
+        return render_template('main.html')
+    return redirect(url_for('main_page'))
     
 @app.route('/test2', methods=['GET', 'POST'])
 def test2():
     if request.method == 'POST':
         app.test2 = 2
-    pass
+        return render_template('main.html')
+    return redirect(url_for('main_page'))
 
 
 
@@ -106,6 +108,12 @@ class KUpepper:
         
         self.robot.set_security_distance(distance=0.2)
         self.set_vocabulary()
+
+        try:
+            self.robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
+        except:
+            pass
+        
         self.robot.text_to_speech.setLanguage("Korean") #타블렛 화면도 한글로 
         topicContent2 = ("topic: ~mytopic2()\n"
                             "language: enu\n"
@@ -117,7 +125,7 @@ class KUpepper:
         
 
         self.robot.dialog_service.subscribe("my_dialog") #start dialog engine
-        self.load_map_and_localization()
+        # self.load_map_and_localization()
 
         # print(self.robot.navigation_service.getMetricalMap())
 
@@ -141,6 +149,7 @@ class KUpepper:
     #기본 루프
     def baseline(self):
         while_count = 0
+        print("!")
         self.base_parameter()
         try:
             while True:
@@ -200,7 +209,7 @@ class KUpepper:
             self.robot.recordSound()
             self.robot.download_file("speech.wav")
             r = sr.Recognizer()
-            kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+            kr_audio = sr.AudioFile("./tmp_files/speech.wav")
             with kr_audio as source:
                 audio = r.record(source)
             # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
@@ -208,10 +217,12 @@ class KUpepper:
             self.client_soc.sendall(msg2.encode(encoding='utf-8'))
             data = self.client_soc.recv(1000)#메시지 받는 부분
             self.robot.say(data)
-            self.event.clear()
-
         except:
             print("Maybe Pepper didn't hear anything")
+
+        self.event.clear()
+
+   
 
 
     def talk_pepper(self):

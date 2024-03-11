@@ -11,15 +11,15 @@ import cv2
 from flask import Flask, render_template, redirect, url_for, request
 import socket
 import speech_recognition as sr
-
+import numpy
 ############################################################################################
 
 #flask 웹서버
 
 
 app = Flask(__name__)
-web_host = "192.168.0.43"
-web_page = "http://192.168.0.43:8080/"
+web_host = "192.168.0.80"
+web_page = "http://192.168.0.80:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])

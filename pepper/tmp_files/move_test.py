@@ -21,7 +21,7 @@ def main(session):
     # associate word "yo" with animation tag "hello"
     # associate word "testword" with animation tag "hello"
     # assiciate word "everybody" with animation tag "everything"
-    ttw = { "키워드" : ["hey", "yo", "testword"],#키워드 부분 수정하면 돰
+    ttw = { "키워드" : ["hey", "yo", "testword"], #키워드 부분 수정하면 돰
             "everything" : ["everybody"] }
     speak_move_service.addTagsToWords(ttw)
 

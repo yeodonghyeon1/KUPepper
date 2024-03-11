@@ -19,8 +19,8 @@ import numpy as np
 
 
 app = Flask(__name__)
-web_host = "192.168.0.107"
-web_page = "http://192.168.0.107:8080/"
+web_host = "192.168.0.80"
+web_page = "http://192.168.0.80:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])

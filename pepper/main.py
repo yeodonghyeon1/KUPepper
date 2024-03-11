@@ -19,8 +19,8 @@ import numpy as np
 
 
 app = Flask(__name__)
-web_host = "192.168.0.107"
-web_page = "http://192.168.0.107:8080/"
+web_host = "192.168.122.56"
+web_page = "http://192.168.122.56:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -103,6 +103,7 @@ class KUpepper:
 
     #기본 파라미터 구성
     def base_parameter(self):
+        
         self.robot.set_security_distance(distance=0.2)
         self.set_vocabulary()
         self.robot.text_to_speech.setLanguage("Korean") #타블렛 화면도 한글로 
@@ -113,8 +114,10 @@ class KUpepper:
         self.robot.autonomous_life_service.switchFocus("web_site-9108dc/behavior_1") #package-uuid/behavior-path
         loaded_topic=self.robot.dialog_service.loadTopicContent(topicContent2) #load topic content
         self.robot.dialog_service.activateTopic(loaded_topic) #activate topic
+        
+
         self.robot.dialog_service.subscribe("my_dialog") #start dialog engine
-        # self.load_map_and_localization()
+        self.load_map_and_localization()
 
         # print(self.robot.navigation_service.getMetricalMap())
 
@@ -183,9 +186,7 @@ class KUpepper:
     def load_map_and_localization(self):
         self.event.set()
         self.robot.stop_localization()
-        # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
-        # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
-        self.robot.load_map(file_name="2024-02-27T084209.829Z.explo")
+        self.robot.load_map(file_name="2024-03-09T122517.652Z.explo")
         self.robot.first_localization()
         self.event.clear()
 

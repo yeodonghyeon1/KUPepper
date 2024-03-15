@@ -25,7 +25,7 @@ web_page = "http://192.168.0.107:8080/"
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
-    return render_template('start.html')
+    return render_template('main.html')
 
 @app.route('/start', methods=['GET', 'POST'])
 def start():
@@ -215,6 +215,11 @@ class KUpepper:
 
     def talk_pepper(self):
         self.event.set()
+
+        try:
+            self.robot.audio_recorder.stopMicrophonesRecording()
+        except:
+            pass    
         self.robot.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
 
         #여기서 endofprocess가 나올때까지 기다리는데 일정시간 지나면 끝내는 코드를 넣어야함
@@ -238,10 +243,10 @@ class KUpepper:
             self.client_soc.sendall(msg2.encode(encoding='utf-8'))
             data = self.client_soc.recv(1000)#메시지 받는 부분
             self.robot.say(data)
-            self.talk_pepper()#또다시 인식
+            # self.talk_pepper()#또다시 인식
         except:
             self.robot.say("죄송합니다. 다시 말해주시겠습니까?") #인식못했을때
-            self.talk_pepper()# 다시 인식
+            # self.talk_pepper()# 다시 인식
         finally:
             self.event.clear()
             time.sleep(0.1)

@@ -1,6 +1,6 @@
 import socket, time
 
-host = 'localhost' 
+host = '192.168.112.1' 
 port = 3333 
 
 # 서버소켓 오픈/ netstat -a로 포트 확인

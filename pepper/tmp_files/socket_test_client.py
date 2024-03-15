@@ -2,11 +2,10 @@
 
 # 클라이언트
 import socket, threading
-import openai
-openai.api_key = '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'
+import g4f
 #client = OpenAI(api_key="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")
 
-server_ip = '192.168.0.107' 
+server_ip = '192.168.112.1' 
 server_port = 3333 
 messages = [{"role": "system", "content": "니 이름은 pepper이고 너는 경남대학교 1공학관 8층에 위치해있다."},#""이걸로 줄 바꿔도 한줄로 인식 가능
             {"role": "system", "content": "8층에는 pbl실,교수연구실,임베디드실습실등이 있다."},
@@ -57,14 +56,14 @@ while True:
     #받은 메시지 GPT한테 전달
     content = msg
     messages.append({"role":"user", "content":content})
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=messages
+    completion= g4f.ChatCompletion.create(
+    model=g4f.models.gpt_35_turbo_16k_0613,
+    messages=messages,
     )
-    chat_response = completion.choices[0].message
-    print('GPT msg: {chat_response}')
+    chat_response = completion
+    print(f'GPT msg: {chat_response}')
     msg2 = chat_response 
-    print(msg2["content"])
-    socket.sendall(msg2["content"].encode(encoding='utf-8'))
+    socket.sendall(msg2.encode(encoding='utf-8'))
     
     if msg == '/end':
         break

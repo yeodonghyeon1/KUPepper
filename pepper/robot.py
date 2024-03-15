@@ -1291,7 +1291,10 @@ class Pepper:
         return self.speech_to_text("speech.wav", lang)
 
     def recordSound(self):
-        self.audio_recorder.stopMicrophonesRecording()
+        try:
+            self.audio_recorder.stopMicrophonesRecording()
+        except:
+            pass
         print ("start recording")
         self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
         time.sleep(5)

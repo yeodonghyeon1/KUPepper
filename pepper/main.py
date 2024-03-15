@@ -19,8 +19,8 @@ import numpy as np
 
 
 app = Flask(__name__)
-web_host = "192.168.0.107"
-web_page = "http://192.168.0.107:8080/"
+web_host = "192.168.122.56"
+web_page = "http://192.168.122.56:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -38,13 +38,15 @@ def start():
 def test1():
     if request.method == 'POST':
         app.test2 = 1  
-    pass
+        return render_template('main.html')
+    return redirect(url_for('main_page'))
     
 @app.route('/test2', methods=['GET', 'POST'])
 def test2():
     if request.method == 'POST':
         app.test2 = 2
-    pass
+        return render_template('main.html')
+    return redirect(url_for('main_page'))
 
 
 
@@ -103,8 +105,15 @@ class KUpepper:
 
     #기본 파라미터 구성
     def base_parameter(self):
+        
         self.robot.set_security_distance(distance=0.2)
         self.set_vocabulary()
+
+        try:
+            self.robot.dialog_service.unsubscribe("my_dialog") #start dialog engine
+        except:
+            pass
+
         self.robot.text_to_speech.setLanguage("Korean") #타블렛 화면도 한글로 
         topicContent2 = ("topic: ~mytopic2()\n"
                             "language: enu\n"
@@ -113,6 +122,8 @@ class KUpepper:
         self.robot.autonomous_life_service.switchFocus("web_site-9108dc/behavior_1") #package-uuid/behavior-path
         loaded_topic=self.robot.dialog_service.loadTopicContent(topicContent2) #load topic content
         self.robot.dialog_service.activateTopic(loaded_topic) #activate topic
+        
+
         self.robot.dialog_service.subscribe("my_dialog") #start dialog engine
         # self.load_map_and_localization()
 
@@ -138,6 +149,7 @@ class KUpepper:
     #기본 루프
     def baseline(self):
         while_count = 0
+        print("!")
         self.base_parameter()
         try:
             while True:
@@ -156,7 +168,9 @@ class KUpepper:
                     #     self.talk_pepper()
                     if word[1]>=0.40:
                         self.robot.say("네에, 말씀하세요")
-                        self.talk_pepper()
+                        talk_thread = threading.Thread(target=self.talk_pepper)
+                        talk_thread.daemon = True
+                        talk_thread.start()
                     time.sleep(0.1)
                     while_count += 1
                 else:
@@ -183,9 +197,7 @@ class KUpepper:
     def load_map_and_localization(self):
         self.event.set()
         self.robot.stop_localization()
-        # self.robot.load_map(file_name="2024-02-15T080619.628Z.explo")
-        # self.robot.load_map(file_name="2024-02-15T074705.482Z.explo")
-        self.robot.load_map(file_name="2024-02-27T084209.829Z.explo")
+        self.robot.load_map(file_name="2024-03-09T122517.652Z.explo")
         self.robot.first_localization()
         self.event.clear()
 
@@ -199,7 +211,7 @@ class KUpepper:
             self.robot.recordSound()
             self.robot.download_file("speech.wav")
             r = sr.Recognizer()
-            kr_audio = sr.AudioFile("D:/Pepper_Controller_main/pepper/tmp_files/speech.wav")
+            kr_audio = sr.AudioFile("./tmp_files/speech.wav")
             with kr_audio as source:
                 audio = r.record(source)
             # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
@@ -207,10 +219,12 @@ class KUpepper:
             self.client_soc.sendall(msg2.encode(encoding='utf-8'))
             data = self.client_soc.recv(1000)#메시지 받는 부분
             self.robot.say(data)
-            self.event.clear()
-
         except:
             print("Maybe Pepper didn't hear anything")
+
+        self.event.clear()
+
+   
 
 
     def talk_pepper(self):
@@ -219,15 +233,22 @@ class KUpepper:
         try:
             self.robot.audio_recorder.stopMicrophonesRecording()
         except:
-            pass    
+            pass
+    
         self.robot.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
-
+        time.sleep(1)
         #여기서 endofprocess가 나올때까지 기다리는데 일정시간 지나면 끝내는 코드를 넣어야함
+        listenOffCount = 0
         while True:
             print(self.robot.memory_service.getData("ALSpeechRecognition/Status"))
             if self.robot.memory_service.getData("ALSpeechRecognition/Status") == "EndOfProcess":
                 self.robot.audio_recorder.stopMicrophonesRecording()
                 break
+            if self.robot.memory_service.getData("ALSpeechRecognition/Status") == "ListenOff":
+                listenOffCount += 1
+            if listenOffCount == 3:
+                    self.robot.audio_recorder.stopMicrophonesRecording()
+                    break  
 
         # self.robot.audio_service.playFile("/home/nao/speech.wav") #mp3파일 재생 확인용
         self.robot.download_file("speech.wav")
@@ -243,6 +264,7 @@ class KUpepper:
             self.client_soc.sendall(msg2.encode(encoding='utf-8'))
             data = self.client_soc.recv(1000)#메시지 받는 부분
             self.robot.say(data)
+            print(data)
             # self.talk_pepper()#또다시 인식
         except:
             self.robot.say("죄송합니다. 다시 말해주시겠습니까?") #인식못했을때

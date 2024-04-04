@@ -235,9 +235,9 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 The software development was supported by the Technological Agency of the Czech Republic grant No. TL02000362 HUMR - The Use of Humanoid Robot in Promoting Active Ageing in Older Men and Women.
 
-## Troubleshooting
+# Troubleshooting
 
-# if using WSL, add the code
+## if using WSL, add the code
 -pip install SpeechRecognition==3.8.1
 -pip install playsound==1.2.2
 

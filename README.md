@@ -241,8 +241,12 @@ if using WSL, add the code
 
 >pip install playsound==1.2.2
 
->/opt/ros/melodic/share/naoqi_driver/share$ sudo gedit boot_config.json-> audio: Fasle
-
+>/opt/ros/melodic/share/naoqi_driver/share$ sudo gedit boot_config.json
+->
+ "audio":
+    {
+      "enabled"       : false
+    },
 
 
 

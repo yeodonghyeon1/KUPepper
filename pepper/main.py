@@ -18,8 +18,8 @@ import numpy
 
 
 app = Flask(__name__)
-web_host = "192.168.0.80"
-web_page = "http://192.168.0.80:8080/"
+web_host = "192.168.0.125"
+web_page = "http://192.168.0.125:8080/"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -33,17 +33,13 @@ def test1():
         # return "test page 1"
         app.test2 = 1    
     return redirect(url_for('main_page'))
-
-    
+ 
 @app.route('/test2', methods=['GET', 'POST'])
 def test2():
     if request.method == 'POST':
         # return "test page 2"
         app.test2 = 2
     return redirect(url_for('main_page'))
-
-
-
 
 
 #플라스크 변수: 전역변수랑 같음(웹 이벤트 작동 시 사용)
@@ -62,20 +58,29 @@ class KUpepper:
         self.robot.say("HI Pepper")
 
         #베이스 라인 코드
-        self.event = threading.Event()
-        socket_thread = threading.Thread(target=self.socket_Server_connect)
-        socket_thread.start()
-        self.base_thread = threading.Thread(target=self.baseline)
-        self.base_thread.daemon = True
-        self.base_thread.start()
+        # self.event = threading.Event()
+        # socket_thread = threading.Thread(target=self.socket_Server_connect)
+        # socket_thread.start()
+        # self.base_thread = threading.Thread(target=self.baseline)
+        # self.base_thread.daemon = True
+        # self.base_thread.start()
+
+        # self.event = threading.Event()
+        # self.base_thread = threading.Thread(target=self.person_recognition)
+        # self.base_thread.daemon = True
+        # self.base_thread.start()
+        self.person_recognition()
 
         #GUI
-        self.window = Tkinter.Tk()
-        self.base_interface_robot()
-        self.result_map= 0 
-        self.resolution=0 
-        self.offset_x =0 
-        self.offset_y =0
+        # self.window = Tkinter.Tk()
+        # self.base_interface_robot()
+        # self.result_map= 0 
+        # self.resolution=0 
+        # self.offset_x =0 
+        # self.offset_y =0
+
+
+
 
     #이벤트 작동 간 쓰레드 중지
     def stopThreadUntilOneTheEnd(self):
@@ -113,7 +118,6 @@ class KUpepper:
         self.robot.dialog_service.activateTopic(loaded_topic) #activate topic
         self.robot.dialog_service.subscribe("my_dialog") #start dialog engine
         # self.load_map_and_localization()
-
         # print(self.robot.navigation_service.getMetricalMap())
 
     #페퍼 상호작용
@@ -148,7 +152,10 @@ class KUpepper:
                 #     self.talk_pepper()
                 if word[1]>=0.40:
                     self.robot.say("네에, 말씀하세요")
+                    self.person_recognition()
+                    self.listen_pepper()
                     self.talk_pepper()
+                    
 
                 self.web_interaction()
                 self.interaction()
@@ -164,11 +171,11 @@ class KUpepper:
     #맵 종류
     #2024-02-14T082317.984Z.explo(8층 pbl실 기본 explore() 맵)
     #2024-02-16T133625.109Z.explo(앞 부분만 찍은 explore() 맵)
-        #2024-02-16T140640.347Z.explo
-        #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
-        #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
-        #2014-04-04T030206.953Z.explo(세번째)
-        #2024-02-27T084209.829Z.explo 방향 확인 하기 위한 임시 =
+    #2024-02-16T140640.347Z.explo
+    #2024-02-16T140903.087Z.explo( 의자로 맵 만든 거 explore())
+    #2014-04-04T023359.452Z.explo( 의자로 맵 만든 거2)
+    #2014-04-04T030206.953Z.explo(세번째)
+    #2024-02-27T084209.829Z.explo 방향 확인 하기 위한 임시 =
 
     #맵 로드 후 로컬라이제이션
     def load_map_and_localization(self):
@@ -185,8 +192,25 @@ class KUpepper:
 
     #gpt
     def talk_pepper(self):
+        self.listen_pepper() #페퍼가 녹음파일을 가짐
+        self.robot.download_file("speech.wav") #이거 녹음 파일 한번 처리하고 분석해야할꺼같음
+
+        # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
+        #여기서 recognize로 인식하는데 인식못했을때는 죄송합니다 하고 다시 인식하게 만들어야함
+
+        try:
+            msg =self.audio_to_text()
+            data = self.get_data_gpt(msg) 
+            self.robot.say(data) #받은 string을 말하기- 질문에 답변
+        except:
+            self.robot.say("죄송합니다. 다시 말해주시겠습니까?") #인식못했을때
+        finally:
+            self.event.clear()
+            time.sleep(0.1)
+    
+    def listen_pepper(self):
         self.event.set()
-        self.robot.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+        self.robot.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0)) #녹화 시작
 
         #여기서 endofprocess가 나올때까지 기다리는데 일정시간 지나면 끝내는 코드를 넣어야함
         while True:
@@ -196,35 +220,59 @@ class KUpepper:
                 break
 
         # self.robot.audio_service.playFile("/home/nao/speech.wav") #mp3파일 재생 확인용
-        self.robot.download_file("speech.wav")
+        pass
+
+    def audio_to_text(self):
         r = sr.Recognizer()
         kr_audio = sr.AudioFile("tmp_files/speech.wav")
         with kr_audio as source:
             audio = r.record(source)
-        # self.robot.say(r.recognize_google(audio, language='ko-KR').encode('utf8'))
-        #여기서 recognize로 인식하는데 인식못했을때는 죄송합니다 하고 다시 인식하게 만들어야함
+       
+        msg = r.recognize_google(audio, language='ko-KR') #음성을 변환
+        return msg
+
+    def get_data_gpt(self,msg):
+        self.client_soc.sendall(msg.encode(encoding='utf-8')) #변환텍스트를 서버로 전달
+        data = self.client_soc.recv(1000)#메시지 받는 부분
+        return data
+
+    def dialog(self):
+        while True:
+            self.person_recognition()
+            self.listen_pepper()
+            self.talk_pepper()
+            #답변에 만족하셨나요? or 다른 질문은 없으신가요?
+            #상대의 답변을 듣고 목적파악!
+            self.check_purpose()
+            #목적(상태)에 맞게 동작!
+            pass
+        pass
+
+    #사람인식
+    def person_recognition(self):
+        self.robot.sonar_service_.subscribe("testapp")
+
         try:
-            msg2 = r.recognize_google(audio, language='ko-KR') #음성을 변환
-            print("메시지 전달!!!!~~~")
-            self.client_soc.sendall(msg2.encode(encoding='utf-8'))
-            data = self.client_soc.recv(1000)#메시지 받는 부분
-            self.robot.say(data)
-            self.talk_pepper()#또다시 인식
-        except:
-            self.robot.say("죄송합니다. 다시 말해주시겠습니까?") #인식못했을때
-            self.talk_pepper()# 다시 인식
-        finally:
-            self.event.clear()
-            time.sleep(0.1)
+            while True:
+                print(self.robot.memory_service.getData("Device/SubDeviceList/Platform/InfraredSpot/Right/Sensor/Value"))
+                time.sleep(0.2)
 
+        except KeyboardInterrupt:
+            #stop
+            self.robot.sonar_service_.unsubscribe("testapp")
+            sys.exit(0)
+    
 
+    #상대방의 목적확인
+    def check_purpose(self):
+        pass
 
     def set_vocabulary(self):
     #setVocabulary
         self.robot.speech_service.pause(True) 
         self.robot.speech_service.removeAllContext() #context를 지워야하는지 몰루
         self.robot.speech_service.deleteAllContexts()
-        self.robot.speech_service.setVocabulary(["cooper",'pepper'],False) #true 하면 "<...> hi <...>" 이렇게 나옴
+        self.robot.speech_service.setVocabulary(["cooper",'pepper','fe puff','pepeo'],False) #true 하면 "<...> hi <...>" 이렇게 나옴
         self.robot.speech_service.pause(False)
 
     #error
@@ -242,7 +290,6 @@ class KUpepper:
         print("enable security: ", self.robot.motion_service.getExternalCollisionProtectionEnabled("All"))
         # print("aa: ", self.robot.motion_service.isCollision())
 
-
     #기본 움직임
     def base_move(self):
         # print((round(self.robot.motion_service.getAngles("HeadPitch", True)[0],1)+0.5)*10)
@@ -251,7 +298,6 @@ class KUpepper:
         print((round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
         self.robot.motion_service.move(0,0,(round(self.robot.motion_service.getAngles("HeadYaw", True)[0],1)))
         self.robot.motion_service.move(1,0,0)
-
 
     #GUI에 기능 적용
     def base_interface_robot(self):
@@ -296,7 +342,6 @@ class KUpepper:
         move_pepper.start()
 
         self.event.clear()
-
 
     def show_map_button_push(self):
         self.event.set()               
@@ -367,7 +412,6 @@ class KUpepper:
 
     def session_reset(self):
         self.robot.session.reset
- 
 
     #gui 기능(버튼 등) 설계
     def navigation_pepper_button(self):
@@ -420,24 +464,23 @@ class KUpepper:
             host = web_host
             port = 3333
 
-    # 서버소켓 오픈/ netstat -a로 포트 확인
+            # 서버소켓 오픈/ netstat -a로 포트 확인
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server_socket.bind((host, port))
 
-    # 클라이언트 접속 준비 완료
+            # 클라이언트 접속 준비 완료
             server_socket.listen(1)
 
             print('echo server start')
 
-    #  클라이언트 접속 기다리며 대기 
+            #  클라이언트 접속 기다리며 대기 
             self.client_soc, addr = server_socket.accept()
             print('connected client addr:', addr)
 
             time.sleep(999999)
             print('서버 종료.')
             # socket_Server_connect.close()
-
 
 def main():
     pepper = KUpepper("192.168.0.125", "9559")
@@ -447,9 +490,9 @@ if __name__ == "__main__":
     base_thread.daemon = True
     base_thread.start()
 
-    app.run(host=web_host, port=8080, debug=False)
+    # app.run(host=web_host, port=8080, debug=False)
 
-    # main()aa
+    main()
     
 
     
